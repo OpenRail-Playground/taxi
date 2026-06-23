@@ -16,4 +16,5 @@ class CustomerJourney(TypedDict):
     destination_name: str
     destination_lat: float
     destination_lon: float
+    destination_name: str
     status: TaxiPoolingStatus
