@@ -7,6 +7,7 @@ class TaxiPoolingStatus(StrEnum):
     CURRENTLY_POOLING = "CURRENTLY_POOLING"
     SCHEDULED = "SCHEDULED"
     DENIED = "DENIED"
+    STILL_WAITING = "STILL_WAITING"
 
 
 class CustomerJourney(TypedDict):
@@ -18,3 +19,4 @@ class CustomerJourney(TypedDict):
     destination_lon: float
     destination_name: str
     status: TaxiPoolingStatus
+    pool_number: int
