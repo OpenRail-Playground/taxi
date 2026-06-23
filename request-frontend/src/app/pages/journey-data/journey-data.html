@@ -29,12 +29,22 @@
         message="Please enter the last name of the main traveller." />
     </div>
 
+    @if (error()) {
+      <db-notification
+        variant="standalone"
+        semantic="critical"
+        icon="exclamation_mark_circle">
+        {{ error() }}
+      </db-notification>
+    }
+
     <db-button
       variant="brand"
       width="full"
       iconTrailing="arrow_right"
+      [disabled]="loading()"
       (click)="continue()">
-      Continue
+      {{ loading() ? 'Checking…' : 'Continue' }}
     </db-button>
 
     <db-notification
