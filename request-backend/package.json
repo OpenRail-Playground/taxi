@@ -12,6 +12,7 @@
     "build": "nest build",
     "start": "node dist/main.js",
     "dev": "nest start --watch",
+    "seed:bookings": "ts-node --transpile-only scripts/seed-bookings.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint \"src/**/*.ts\"",

@@ -29,28 +29,30 @@ Browser
                     │  free, sleeps 15min)   │
                     └─────────┬──────────────┘
                               │
-                  ┌───────────┼───────────────────┐
-                  │           │                   │
-                  ▼           ▼                   ▼
-            Upstash      DB RIS APIs       Excel (baked into image)
-            Redis REST   (RIS v1+v2)       Bookingdata.xlsx
-            (help-       (read-only)       (Render Secret File)
-             requests)
+                  ┌───────────┴───────────────────┐
+                  │                               │
+                  ▼                               ▼
+            Upstash Redis                  DB RIS APIs
+            - help-request:<id>            (RIS v1 + v2, read-only)
+            - help-request:_ids set
+            - bookings hash (seeded once
+              from local xlsx)
 ```
 
-Three external dependencies:
+Two external dependencies:
 
 | Dependency | Why | Free? |
 | --- | --- | --- |
-| [Upstash Redis](https://upstash.com) | Persistence for help-requests (Render's free filesystem is ephemeral) | Yes, 10k commands/day |
+| [Upstash Redis](https://upstash.com) | All persistent state: help-requests + the bookings reference data | Yes, 10k commands/day |
 | [DB API Marketplace](https://developers.deutschebahn.com) | RIS::Journeys v1+v2 for journey stops | Yes, subscribed via account |
-| Booking spreadsheet | Local Excel (`Bookingdata_UPLOAD_custom_auftragsnummer.xlsx`) loaded at boot for `/bookings/validate` | Yes, ships in repo as a Render Secret File |
+
+The booking spreadsheet (`Bookingdata_UPLOAD_custom_auftragsnummer.xlsx`) lives only on the developer's machine. It is **seeded once** into Upstash via `pnpm seed:bookings` and never leaves the team's hands.
 
 ---
 
 ## Step 1 — Upstash Redis (5 min)
 
-The free filesystem on Render is wiped on every restart. We use Upstash Redis instead for storing `HelpRequest` entities.
+Render's free filesystem is wiped on every restart, so all state lives in Upstash.
 
 1. Sign up at [console.upstash.com](https://console.upstash.com) — GitHub OAuth, no credit card.
 2. Create database:
@@ -58,30 +60,35 @@ The free filesystem on Render is wiped on every restart. We use Upstash Redis in
    - **Type:** Regional
    - **Region:** `eu-west-1` (Ireland) — closest to Render's Frankfurt region
    - **TLS:** enabled (default)
-3. After creation, open the database → **REST API** tab. Copy two values:
-   - `UPSTASH_REDIS_REST_URL` (looks like `https://xxx.upstash.io`)
-   - `UPSTASH_REDIS_REST_TOKEN` (long base64 string)
+3. After creation, open the database → **REST API** tab. Copy two values into `request-backend/.env`:
 
-Keep these handy — Render asks for them in Step 3.
+   ```bash
+   PERSISTENCE_BACKEND=redis
+   UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+   UPSTASH_REDIS_REST_TOKEN=<token>
+   ```
 
-**Verify locally** (optional):
+## Step 2 — Seed the bookings hash (1 min)
+
+The `bookings` Redis hash is populated once from your local Excel file. The seed script reads the xlsx, parses every row, and pipelines `HSET bookings <auftragsnummer> <json>` to Upstash in batches of 500.
 
 ```bash
-export PERSISTENCE_BACKEND=redis
-export UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-export UPSTASH_REDIS_REST_TOKEN=<token>
 cd request-backend
-pnpm build
-node dist/main.js
-# In another terminal:
-curl -s -X POST http://localhost:3000/help-requests ...   # should 201
+pnpm seed:bookings
 ```
 
-Check the Upstash dashboard → **Data Browser**. You should see two keys: `help-request:<uuid>` and `help-request:_ids`.
+Expected output (last few lines):
 
----
+```
+[seed-bookings] Seeded 31546 / 31546
+[seed-bookings] Done. Redis hash "bookings" now holds 31545 bookings.
+```
 
-## Step 2 — DB API Marketplace credentials
+This is **idempotent** — re-running just overwrites the same fields with the same data. Run it again whenever the xlsx changes.
+
+The Excel file never enters the repo, never enters Render, never enters any deployed artifact.
+
+## Step 3 — DB API Marketplace credentials
 
 If you don't already have them, subscribe to **both** APIs on the [DB API Marketplace](https://developers.deutschebahn.com/db-api-marketplace):
 
@@ -95,18 +102,19 @@ The two versions are separate subscriptions with independent credentials. You'll
 
 ---
 
-## Step 3 — Deploy to Render via Blueprint (15 min)
+## Step 4 — Deploy to Render via Blueprint (15 min)
 
 Render reads the [`render.yaml`](../render.yaml) at the repo root and provisions both services automatically.
 
-### 3a. Connect the repo
+### 4a. Connect the repo
 
 1. Sign up at [render.com](https://render.com) — GitHub OAuth, no credit card.
 2. **New +** → **Blueprint** → select the `taxi` repository.
 3. Render detects `render.yaml` and previews two services: `taxi-backend` and `taxi-frontend`.
-4. Click **Apply**. Render creates both services in `Pending` state — they will fail their first build because env vars are not set yet. This is expected.
+4. **Branch:** select `green` (or whichever branch holds the deploy commits).
+5. Click **Apply**. Render creates both services in `Pending` state — they will fail their first build because env vars are not set yet. This is expected.
 
-### 3b. Set backend secrets
+### 4b. Set backend secrets
 
 Open the `taxi-backend` service → **Environment**:
 
@@ -114,29 +122,14 @@ Open the `taxi-backend` service → **Environment**:
 | --- | --- |
 | `UPSTASH_REDIS_REST_URL` | from Step 1 |
 | `UPSTASH_REDIS_REST_TOKEN` | from Step 1 |
-| `RIS_V1_CLIENT_ID` | from Step 2 |
-| `RIS_V1_API_KEY` | from Step 2 |
-| `RIS_V2_CLIENT_ID` | from Step 2 |
-| `RIS_V2_API_KEY` | from Step 2 |
+| `RIS_V1_CLIENT_ID` | from Step 3 |
+| `RIS_V1_API_KEY` | from Step 3 |
+| `RIS_V2_CLIENT_ID` | from Step 3 |
+| `RIS_V2_API_KEY` | from Step 3 |
 
 Save. Render queues a redeploy automatically.
 
-### 3c. Upload the booking Excel as a Secret File
-
-The `Bookingdata_UPLOAD_custom_auftragsnummer.xlsx` file is gitignored on purpose — it must never live in the repo. Render's **Secret Files** feature mounts it into the container at boot.
-
-Still on `taxi-backend` → **Environment** → scroll to **Secret Files** → **Add Secret File**:
-
-| Field | Value |
-| --- | --- |
-| Filename | `Bookingdata.xlsx` |
-| Contents | upload your local `.local/Bookingdata_UPLOAD_custom_auftragsnummer.xlsx` |
-
-The file lands at `/etc/secrets/Bookingdata.xlsx`. The `BOOKING_DATA_PATH` env var in `render.yaml` already points there.
-
-Save. Render redeploys.
-
-### 3d. Set frontend env vars
+### 4c. Set frontend env vars
 
 Once the backend deploys successfully, Render assigns it a public URL like `https://taxi-backend-xxxx.onrender.com`. Copy it.
 
@@ -152,7 +145,7 @@ The `ASSET_*` vars decrypt the DB-UX theme assets at install time. Without them 
 
 Save. Render redeploys.
 
-### 3e. Verify
+### 4d. Verify
 
 After both services finish building (~5 min each on free tier):
 
@@ -161,13 +154,13 @@ After both services finish building (~5 min each on free tier):
 curl https://taxi-backend-xxxx.onrender.com/health
 # → {"status":"ok","timestamp":"..."}
 
-# Bookings validate (proves the Excel file mounted)
+# Bookings validate (proves the bookings hash was seeded)
 curl -s -X POST https://taxi-backend-xxxx.onrender.com/bookings/validate \
   -H 'Content-Type: application/json' \
   -d '{"auftragsnummer":"258376672881","lastName":"Mustermann"}'
 # → {"trainNumber":"ICE 619","travelDate":"2026-05-29",...}
 
-# Help-request create (proves Upstash is wired)
+# Help-request create (proves help-request persistence is wired)
 curl -s -X POST https://taxi-backend-xxxx.onrender.com/help-requests \
   -H 'Content-Type: application/json' \
   -d '{...full DTO...}'
@@ -202,12 +195,16 @@ The frontend Static Site is on a CDN and never sleeps.
 
 Render → service → **Logs** tab. The backend uses structured JSON logging (`ConsoleLogger({ json: true })`); each line is one event with `level`, `message`, `requestId`, etc.
 
-### Updating the Excel file
+### Updating the bookings hash
 
-Render Secret Files don't auto-rebuild on edit. After uploading a new version:
+When the source xlsx changes, re-run the seed locally:
 
-1. **Manual Deploy** → **Clear build cache & deploy** on the backend service.
-2. Wait ~5 min for the redeploy.
+```bash
+cd request-backend
+pnpm seed:bookings
+```
+
+The script overwrites the same fields in the `bookings` hash in place. No Render redeploy needed — the next request reads the updated data immediately.
 
 ### Pushing code updates
 
@@ -235,12 +232,12 @@ For Render BE + Vercel FE: deploy the `request-backend/` part of `render.yaml` a
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | Backend `/health` works, `/help-requests` returns 500 | Upstash env vars wrong | Re-check `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`. Look for `getaddrinfo ENOTFOUND` in logs. |
-| `/bookings/validate` always returns 404 | Excel Secret File missing or filename mismatch | Check `BOOKING_DATA_PATH` matches the Secret File path. Look for `Loaded 0 bookings` (good path) vs no log line (file missing) in startup logs. |
+| `/bookings/validate` always returns 404 | Bookings hash was never seeded, or wrong Upstash database | Run `pnpm seed:bookings` locally pointing at the deployed Upstash. Verify via the Upstash Data Browser: there should be a `bookings` hash with ~31k fields. |
 | `/bookings/:id/journey-stops` returns 502 | RIS credentials missing or v1/v2 swapped | The two subscriptions are independent. Confirm v1 keys are in `RIS_V1_*` and v2 keys are in `RIS_V2_*`. |
 | Frontend shows broken logo | `ASSET_PASSWORD` / `ASSET_INIT_VECTOR` not set during build | Set them on `taxi-frontend` → Environment, redeploy. The rest of the app works regardless. |
 | Frontend XHR fails with CORS error | Backend rejected the origin | `app.enableCors({ origin: true })` accepts any origin. Check the browser console for the actual fetch URL — if it still points at `localhost:3000`, the build-time substitution failed; check `BACKEND_URL` is set on the frontend service and the build log shows `--define BACKEND_URL=...`. |
 | First request after idle takes 30+ seconds | Backend was asleep | See "Sleep on idle" above. Add a cron ping or upgrade to Render Starter ($7/mo) for always-on. |
-| `Loaded ~$Bookingdata...xlsx` errors in logs | The temp `~$` Excel lockfile got uploaded by mistake | Re-upload the Secret File. The macOS Office lockfile starts with `~$` and is not a valid xlsx. |
+| `pnpm seed:bookings` reads `~$Bookingdata...xlsx` | macOS Office leaves a `~$` lockfile when the xlsx is open | Close Excel before running the seed, or set `BOOKING_DATA_PATH` to the real filename. |
 
 ---
 

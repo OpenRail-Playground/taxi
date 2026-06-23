@@ -5,7 +5,7 @@ services:
   #   - 512 MB RAM, 0.1 CPU
   #   - sleeps after 15 min idle (cold start ~30-60s)
   #   - filesystem is ephemeral - DO NOT use PERSISTENCE_BACKEND=json here
-  # Persistence runs against Upstash Redis (free tier, no credit card).
+  # All state lives in Upstash Redis (help-requests + bookings hash).
   # ---------------------------------------------------------------------
   - type: web
     name: taxi-backend
@@ -33,8 +33,6 @@ services:
         sync: false
       - key: RIS_V2_API_KEY
         sync: false
-      - key: BOOKING_DATA_PATH
-        value: /etc/secrets/Bookingdata.xlsx
 
   # ---------------------------------------------------------------------
   # request-frontend

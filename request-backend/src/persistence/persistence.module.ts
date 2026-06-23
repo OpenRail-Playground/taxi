@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { JsonFileRepository } from './json-file-repository';
 import { fileRepositoryToken } from './file-repository';
 import { RedisRepository } from './redis-repository';
-import type { RedisClient } from './redis-client';
+import { type RedisClient, buildRedisClient } from './redis-client';
 
 export interface FileRepositoryFeatureOptions {
   entity: string;
@@ -22,18 +22,6 @@ function resolveBackend(): ResolvedBackend {
   throw new Error(
     `Unsupported PERSISTENCE_BACKEND=${raw}. Expected 'json' or 'redis'.`,
   );
-}
-
-/**
- * Lazy-load the Upstash SDK so the json default path never imports it.
- * `Redis.fromEnv()` reads UPSTASH_REDIS_REST_URL and
- * UPSTASH_REDIS_REST_TOKEN; missing-env errors surface as boot failures,
- * which is the correct behavior.
- */
-function buildRedisClient(): RedisClient {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Redis } = require('@upstash/redis') as typeof import('@upstash/redis');
-  return Redis.fromEnv() as unknown as RedisClient;
 }
 
 @Module({})

@@ -79,6 +79,8 @@ Storage layout:
 
 The Upstash REST client transparently JSON-encodes on the way out and parses on the way in, so the entity shape matches what callers see from the JSON backend.
 
+When `PERSISTENCE_BACKEND=redis`, the bookings reference data is also read from Redis (hash key `bookings`, field = `auftragsnummer`, value = booking record). See [`scripts/seed-bookings.ts`](../../scripts/seed-bookings.ts) for the one-shot seeder that populates the hash from the local Excel file.
+
 ## ID contract
 
 IDs are server-generated UUID v4 strings. Consumers never supply an `id` to `create()`. IDs must match `^[A-Za-z0-9_-]{1,128}$` — any violation throws `InvalidIdError`.

@@ -29,8 +29,8 @@ const MISMATCH_MESSAGE =
 export class HelpRequestVerifier {
   constructor(private readonly bookings: BookingsRepository) {}
 
-  verify(input: CreateHelpRequestDto): void {
-    const record = this.bookings.findByAuftragsnummer(input.auftragsnummer);
+  async verify(input: CreateHelpRequestDto): Promise<void> {
+    const record = await this.bookings.findByAuftragsnummer(input.auftragsnummer);
     if (!record) {
       throw new NotFoundException(NOT_FOUND_MESSAGE);
     }

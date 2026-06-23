@@ -7,7 +7,10 @@ import type { BookingRecord } from '../bookings/booking.types';
 import { HelpRequestVerifier } from './help-request.verifier';
 
 interface MockBookingsRepository {
-  findByAuftragsnummer: jest.Mock<BookingRecord | undefined, [string]>;
+  findByAuftragsnummer: jest.Mock<
+    Promise<BookingRecord | undefined>,
+    [string]
+  >;
 }
 
 const NOT_FOUND_MESSAGE =
@@ -70,61 +73,73 @@ describe('HelpRequestVerifier', () => {
     verifier = module.get(HelpRequestVerifier);
   });
 
-  it('does not throw when the submitted journey matches the booking record', () => {
-    mockRepo.findByAuftragsnummer.mockReturnValue(buildRecord());
+  it('does not throw when the submitted journey matches the booking record', async () => {
+    mockRepo.findByAuftragsnummer.mockResolvedValue(buildRecord());
 
-    expect(() => verifier.verify(buildInput())).not.toThrow();
+    await expect(verifier.verify(buildInput())).resolves.toBeUndefined();
     expect(mockRepo.findByAuftragsnummer).toHaveBeenCalledWith('258376672881');
   });
 
-  it('throws NotFoundException with the exact message when the booking does not exist', () => {
-    mockRepo.findByAuftragsnummer.mockReturnValue(undefined);
+  it('throws NotFoundException with the exact message when the booking does not exist', async () => {
+    mockRepo.findByAuftragsnummer.mockResolvedValue(undefined);
 
-    expect(() => verifier.verify(buildInput())).toThrow(NotFoundException);
-    expect(() => verifier.verify(buildInput())).toThrow(NOT_FOUND_MESSAGE);
+    await expect(verifier.verify(buildInput())).rejects.toThrow(
+      NotFoundException,
+    );
+    await expect(verifier.verify(buildInput())).rejects.toThrow(
+      NOT_FOUND_MESSAGE,
+    );
   });
 
-  it('throws ForbiddenException when the train number does not match', () => {
-    mockRepo.findByAuftragsnummer.mockReturnValue(
+  it('throws ForbiddenException when the train number does not match', async () => {
+    mockRepo.findByAuftragsnummer.mockResolvedValue(
       buildRecord({ trainNumber: 'ICE 999' }),
     );
 
-    expect(() => verifier.verify(buildInput())).toThrow(ForbiddenException);
-    expect(() => verifier.verify(buildInput())).toThrow(FORBIDDEN_MESSAGE);
+    await expect(verifier.verify(buildInput())).rejects.toThrow(
+      ForbiddenException,
+    );
+    await expect(verifier.verify(buildInput())).rejects.toThrow(
+      FORBIDDEN_MESSAGE,
+    );
   });
 
-  it('throws ForbiddenException when the travel date does not match', () => {
-    mockRepo.findByAuftragsnummer.mockReturnValue(
+  it('throws ForbiddenException when the travel date does not match', async () => {
+    mockRepo.findByAuftragsnummer.mockResolvedValue(
       buildRecord({ travelDate: '2026-06-01' }),
     );
 
-    expect(() => verifier.verify(buildInput())).toThrow(ForbiddenException);
+    await expect(verifier.verify(buildInput())).rejects.toThrow(
+      ForbiddenException,
+    );
   });
 
-  it('throws ForbiddenException when the final destination does not match record.destinationStation', () => {
-    mockRepo.findByAuftragsnummer.mockReturnValue(
+  it('throws ForbiddenException when the final destination does not match record.destinationStation', async () => {
+    mockRepo.findByAuftragsnummer.mockResolvedValue(
       buildRecord({ destinationStation: 'Zürich HB' }),
     );
 
-    expect(() => verifier.verify(buildInput())).toThrow(ForbiddenException);
+    await expect(verifier.verify(buildInput())).rejects.toThrow(
+      ForbiddenException,
+    );
   });
 
-  it('throws ForbiddenException when adults + kids does not equal record.passengerCount', () => {
-    mockRepo.findByAuftragsnummer.mockReturnValue(
+  it('throws ForbiddenException when adults + kids does not equal record.passengerCount', async () => {
+    mockRepo.findByAuftragsnummer.mockResolvedValue(
       buildRecord({ passengerCount: 5 }),
     );
 
-    expect(() =>
+    await expect(
       verifier.verify(
         buildInput({
           passengers: { adults: 2, kids: 1, bicycles: 0, wheelchairs: 0 },
         }),
       ),
-    ).toThrow(ForbiddenException);
+    ).rejects.toThrow(ForbiddenException);
   });
 
-  it('does NOT throw when only the disruptionStation differs (user-editable carve-out)', () => {
-    mockRepo.findByAuftragsnummer.mockReturnValue(buildRecord());
+  it('does NOT throw when only the disruptionStation differs (user-editable carve-out)', async () => {
+    mockRepo.findByAuftragsnummer.mockResolvedValue(buildRecord());
 
     const input = buildInput({
       journey: {
@@ -137,6 +152,6 @@ describe('HelpRequestVerifier', () => {
       },
     });
 
-    expect(() => verifier.verify(input)).not.toThrow();
+    await expect(verifier.verify(input)).resolves.toBeUndefined();
   });
 });

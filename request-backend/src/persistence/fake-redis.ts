@@ -1,25 +1,9 @@
 import type { RedisClient } from './redis-client';
 
-/**
- * Deterministic in-memory fake honoring the same return contracts as
- * @upstash/redis. Used by RedisRepository tests so they need no network.
- *
- * Behaviors mirrored:
- *  - get returns null when missing
- *  - set returns 'OK' (we accept unknown; just need a resolved promise)
- *  - del returns the count of keys actually removed
- *  - sadd/srem return the count of NEW members added / removed
- *  - smembers returns a snapshot array (order not guaranteed)
- *  - mget returns null for missing keys, preserving index order
- *
- * Values are stored as parsed objects (not JSON strings). Upstash's
- * REST client does the same — it transparently JSON-encodes on the
- * way out and parses on the way in. Tests + production therefore see
- * the same shape.
- */
 export class FakeRedis implements RedisClient {
   private kv = new Map<string, unknown>();
   private sets = new Map<string, Set<string>>();
+  private hashes = new Map<string, Map<string, unknown>>();
 
   async get<T = unknown>(key: string): Promise<T | null> {
     const v = this.kv.get(key);
@@ -83,5 +67,30 @@ export class FakeRedis implements RedisClient {
       const v = this.kv.get(k);
       return v === undefined ? null : v;
     }) as TData;
+  }
+
+  async hget<T = unknown>(key: string, field: string): Promise<T | null> {
+    const hash = this.hashes.get(key);
+    if (!hash) return null;
+    const v = hash.get(field);
+    return v === undefined ? null : (v as T);
+  }
+
+  async hset(
+    key: string,
+    fieldValues: Record<string, unknown>,
+  ): Promise<number> {
+    const hash = this.hashes.get(key) ?? new Map<string, unknown>();
+    let added = 0;
+    for (const [field, value] of Object.entries(fieldValues)) {
+      if (!hash.has(field)) added += 1;
+      hash.set(field, value);
+    }
+    this.hashes.set(key, hash);
+    return added;
+  }
+
+  async hlen(key: string): Promise<number> {
+    return this.hashes.get(key)?.size ?? 0;
   }
 }

@@ -38,7 +38,7 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
   });
 
   it('returns 200 with the JourneyStopsResponse for a known booking', async () => {
-    bookings.findByAuftragsnummer.mockReturnValue(booking);
+    bookings.findByAuftragsnummer.mockResolvedValue(booking);
     const response = {
       origin: {
         evaNumber: '1',
@@ -66,7 +66,7 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
   });
 
   it('throws NotFoundException (404) when booking is not found', async () => {
-    bookings.findByAuftragsnummer.mockReturnValue(undefined);
+    bookings.findByAuftragsnummer.mockResolvedValue(undefined);
 
     await expect(
       controller.getJourneyStops('does-not-exist'),
@@ -78,7 +78,7 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
   });
 
   it('rejects with raw Error on UNPARSEABLE_TRAIN_NUMBER (controller passes through)', async () => {
-    bookings.findByAuftragsnummer.mockReturnValue(booking);
+    bookings.findByAuftragsnummer.mockResolvedValue(booking);
     journeyStops.getStops.mockRejectedValue(
       new Error('UNPARSEABLE_TRAIN_NUMBER:ICE'),
     );
@@ -89,7 +89,7 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
   });
 
   it('throws NotFoundException (404) on NO_JOURNEY_FOUND (service throws Nest exception)', async () => {
-    bookings.findByAuftragsnummer.mockReturnValue(booking);
+    bookings.findByAuftragsnummer.mockResolvedValue(booking);
     journeyStops.getStops.mockRejectedValue(
       new NotFoundException('No journey found for ICE 619 on 2026-05-29.'),
     );
@@ -103,7 +103,7 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
   });
 
   it('throws BadGatewayException (502) with cause preserved on RIS error', async () => {
-    bookings.findByAuftragsnummer.mockReturnValue(booking);
+    bookings.findByAuftragsnummer.mockResolvedValue(booking);
     journeyStops.getStops.mockRejectedValue(
       new BadGatewayException('RIS API unavailable. Try again later.', {
         cause: new Error('upstream-timeout'),
@@ -119,7 +119,7 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
   });
 
   it('throws GatewayTimeoutException (504) with cause preserved on RIS timeout', async () => {
-    bookings.findByAuftragsnummer.mockReturnValue(booking);
+    bookings.findByAuftragsnummer.mockResolvedValue(booking);
     journeyStops.getStops.mockRejectedValue(
       new GatewayTimeoutException('RIS API timed out. Try again later.', {
         cause: new Error('aborted'),
