@@ -10,19 +10,7 @@
       </p>
     </header>
 
-<<<<<<< HEAD
     <!-- Journey Information -->
-=======
-    @if (submitted()) {
-      <db-notification
-        variant="standalone"
-        semantic="successful"
-        headline="Request submitted">
-        We received your request and will contact you shortly.
-      </db-notification>
-    }
-
->>>>>>> ce9184fea75484a74c895351242011c92160663b
     <db-card spacing="medium" class="card">
       <h2 class="card-title">
         <db-icon icon="train" weight="24" />
@@ -50,7 +38,9 @@
 
         @if (journey().disruption; as disruption) {
           <li class="timeline-stop is-disruption">
-            <span class="timeline-rail"><span class="timeline-dot"></span></span>
+            <span class="timeline-rail"
+              ><span class="timeline-dot"></span
+            ></span>
             <div class="timeline-body">
               <div class="timeline-row">
                 <span class="timeline-station">{{ disruption.station }}</span>

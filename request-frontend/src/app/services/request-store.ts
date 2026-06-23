@@ -92,9 +92,7 @@ export class RequestStore {
         station: destination.name,
         plannedArrival: formatTime(destination.scheduledTime),
       },
-      taxi: strandedAt
-        ? { from: strandedAt.name, to: destination.name }
-        : null,
+      taxi: strandedAt ? { from: strandedAt.name, to: destination.name } : null,
     }));
   }
 }
