@@ -56,7 +56,8 @@ def build_test_journeys() -> list[CustomerJourney]:
 def build_distance_matrix() -> tuple[list[list[float]], list[str]]:
     destination_names = [destination.name for destination in DESTINATIONS]
 
-    matrix: list[list[float]] = []
+    matrix: list[list[float]] = [[destination.source_distance_km for destination in DESTINATIONS]]
+
     for row in DESTINATIONS:
         row_values: list[float] = []
         for col in DESTINATIONS:
