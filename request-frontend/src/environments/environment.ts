@@ -1,7 +1,13 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
+/**
+ * Build-time constant injected via the Angular builder's esbuild `define`
+ * (see angular.json `architect.build.options.define`).
+ *
+ * Default value is `"http://localhost:3000"` for local dev. Production
+ * builds override it with `ng build --define BACKEND_URL="\"https://...\""`,
+ * which the deploy pipeline drives from the BACKEND_URL env var.
+ */
+declare const BACKEND_URL: string;
 
 export const environment = {
-  backendUrl: 'http://localhost:3000',
+  backendUrl: BACKEND_URL,
 };

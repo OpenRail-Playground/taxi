@@ -27,7 +27,10 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["src/styles.scss"],
+            "define": {
+              "BACKEND_URL": "\"http://localhost:3000\""
+            }
           },
           "configurations": {
             "production": {
@@ -41,12 +44,6 @@
                   "type": "anyComponentStyle",
                   "maximumWarning": "4kb",
                   "maximumError": "6kb"
-                }
-              ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
                 }
               ],
               "outputHashing": "all",
