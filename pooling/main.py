@@ -46,6 +46,7 @@ def build_test_journeys() -> list[CustomerJourney]:
                     destination_lon=destination.lon,
                     status=TaxiPoolingStatus.WAITING,
                     pool_number=0,
+                    intermediate_stops=[],
                 )
             )
             current_id += 1

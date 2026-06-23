@@ -36,6 +36,7 @@ def _get_waiting_customers(customer_journeys: list[CustomerJourney], destination
 def _assign_to_group(customer_journeys: list[CustomerJourney], journey_index: int, group_number: int) -> None:
     customer_journeys[journey_index]["status"] = TaxiPoolingStatus.SCHEDULED
     customer_journeys[journey_index]["pool_number"] = group_number
+    customer_journeys[journey_index]["intermediate_stops"] = []
 
 
 def _deny_destination(customer_journeys: list[CustomerJourney], destination_name: str) -> None:
@@ -48,12 +49,37 @@ def _deny_destination(customer_journeys: list[CustomerJourney], destination_name
 
         journey["status"] = TaxiPoolingStatus.DENIED
         journey["pool_number"] = 0
+        journey["intermediate_stops"] = []
 
 
 def _deny_group(customer_journeys: list[CustomerJourney], journey_indices: list[int]) -> None:
     for journey_index in journey_indices:
         customer_journeys[journey_index]["status"] = TaxiPoolingStatus.DENIED
         customer_journeys[journey_index]["pool_number"] = 0
+        customer_journeys[journey_index]["intermediate_stops"] = []
+
+
+def _update_group_intermediate_stops(
+    customer_journeys: list[CustomerJourney],
+    journey_indices: list[int],
+    route_destination_indices: list[int],
+    name_mapping: list[str],
+) -> None:
+    route_destination_names = [name_mapping[destination_index] for destination_index in route_destination_indices]
+    first_position_by_destination: dict[str, int] = {}
+
+    for position, destination_name in enumerate(route_destination_names):
+        if destination_name not in first_position_by_destination:
+            first_position_by_destination[destination_name] = position
+
+    for journey_index in journey_indices:
+        destination_name = customer_journeys[journey_index]["destination_name"]
+        destination_position = first_position_by_destination.get(destination_name)
+        if destination_position is None:
+            customer_journeys[journey_index]["intermediate_stops"] = []
+            continue
+
+        customer_journeys[journey_index]["intermediate_stops"] = route_destination_names[:destination_position]
 
 
 def _append_destination_to_route_if_needed(route_destination_indices: list[int], destination_index: int) -> None:
@@ -163,6 +189,12 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
 
         for journey_index in waiting_customers:
             if current_members_in_group == __MAX_PASSENGERS_PER_TAXI__:
+                _update_group_intermediate_stops(
+                    customer_journeys,
+                    current_group_journey_indices,
+                    current_route_destination_indices,
+                    name_mapping,
+                )
                 _deny_group_if_pool_distance_exceeds_limit(
                     customer_journeys,
                     current_group_journey_indices,
@@ -190,6 +222,13 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
                 current_group_journey_indices,
                 current_route_destination_indices,
             )
+
+        _update_group_intermediate_stops(
+            customer_journeys,
+            current_group_journey_indices,
+            current_route_destination_indices,
+            name_mapping,
+        )
 
         _deny_group_if_pool_distance_exceeds_limit(
             customer_journeys,

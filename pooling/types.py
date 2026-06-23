@@ -20,3 +20,4 @@ class CustomerJourney(TypedDict):
     destination_name: str
     status: TaxiPoolingStatus
     pool_number: int
+    intermediate_stops: list[str]
