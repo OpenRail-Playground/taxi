@@ -1,0 +1,64 @@
+/**
+ * Shared types for the Taxi project.
+ *
+ * The frontend and backend both consume these types so the API surface
+ * stays in sync. Anything exported from here is considered part of the
+ * public contract between the two.
+ */
+
+export type HelpRequestStatus =
+  | "new"
+  | "eligible"
+  | "ineligible"
+  | "resolved"
+  | "cancelled";
+
+/**
+ * A help request submitted by a customer on a disrupted journey.
+ *
+ * The current scope (see issue #1) is intentionally minimal. New fields
+ * should be added cautiously and reviewed together by FE and BE.
+ */
+export interface HelpRequest {
+  id: string;
+  /** Identifier of the affected train run, e.g. "ICE 123". */
+  trainNumber: string;
+  /** Station the passenger is currently at or stranded near. */
+  currentStation: string;
+  /** Station the passenger is trying to reach. */
+  destinationStation: string;
+  /** Number of passengers travelling together. */
+  passengerCount: number;
+  /** Optional free-text description from the passenger. */
+  description?: string;
+  /** Optional contact info (e.g. phone or email) for follow-up. */
+  contact?: string;
+  /** Server-side status; clients should treat this as read-only. */
+  status: HelpRequestStatus;
+  /** ISO-8601 timestamp set by the backend on creation. */
+  createdAt: string;
+  /** Result of the eligibility check, populated by the backend. */
+  eligibility: EligibilityResult;
+}
+
+/**
+ * Payload accepted by `POST /help-requests`.
+ *
+ * Server-side fields (id, status, timestamps, eligibility) are not part
+ * of the input; they are filled in by the backend.
+ */
+export type CreateHelpRequestDto = Pick<
+  HelpRequest,
+  | "trainNumber"
+  | "currentStation"
+  | "destinationStation"
+  | "passengerCount"
+  | "description"
+  | "contact"
+>;
+
+export interface EligibilityResult {
+  eligible: boolean;
+  /** Human-readable explanation, suitable for showing to the passenger. */
+  reason: string;
+}
