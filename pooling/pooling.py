@@ -1,4 +1,4 @@
-from pooling.types import CustomerJourney, TaxiPoolingStatus
+from pooling.types import CustomerJourney, TaxiPoolingDenyReason, TaxiPoolingStatus
 
 __MAX_PASSENGERS_PER_TAXI__ = 3
 __MAX_ROUTE_DISTANCE_KM__ = 150.0
@@ -29,7 +29,7 @@ def _get_waiting_customers(customer_journeys: list[CustomerJourney], destination
         index
         for index, journey in enumerate(customer_journeys)
         if journey["status"] not in {TaxiPoolingStatus.SCHEDULED, TaxiPoolingStatus.DENIED}
-        and journey["destination_name"] == destination_name
+           and journey["destination_name"] == destination_name
     ]
 
 
@@ -37,6 +37,7 @@ def _assign_to_group(customer_journeys: list[CustomerJourney], journey_index: in
     customer_journeys[journey_index]["status"] = TaxiPoolingStatus.SCHEDULED
     customer_journeys[journey_index]["pool_number"] = group_number
     customer_journeys[journey_index]["intermediate_stops"] = []
+    customer_journeys[journey_index]["deny_reason"] = None
 
 
 def _deny_destination(customer_journeys: list[CustomerJourney], destination_name: str) -> None:
@@ -50,20 +51,34 @@ def _deny_destination(customer_journeys: list[CustomerJourney], destination_name
         journey["status"] = TaxiPoolingStatus.DENIED
         journey["pool_number"] = 0
         journey["intermediate_stops"] = []
+        journey["deny_reason"] = TaxiPoolingDenyReason.MAX_ROUTE_DISTANCE_EXCEEDED
 
 
-def _deny_group(customer_journeys: list[CustomerJourney], journey_indices: list[int]) -> None:
+def _deny_group(
+        customer_journeys: list[CustomerJourney],
+        journey_indices: list[int],
+        reason: TaxiPoolingDenyReason,
+) -> None:
     for journey_index in journey_indices:
         customer_journeys[journey_index]["status"] = TaxiPoolingStatus.DENIED
         customer_journeys[journey_index]["pool_number"] = 0
         customer_journeys[journey_index]["intermediate_stops"] = []
+        customer_journeys[journey_index]["deny_reason"] = reason
+
+
+def _reset_group_to_waiting(customer_journeys: list[CustomerJourney], journey_indices: list[int]) -> None:
+    for journey_index in journey_indices:
+        customer_journeys[journey_index]["status"] = TaxiPoolingStatus.WAITING
+        customer_journeys[journey_index]["pool_number"] = 0
+        customer_journeys[journey_index]["intermediate_stops"] = []
+        customer_journeys[journey_index]["deny_reason"] = None
 
 
 def _update_group_intermediate_stops(
-    customer_journeys: list[CustomerJourney],
-    journey_indices: list[int],
-    route_destination_indices: list[int],
-    name_mapping: list[str],
+        customer_journeys: list[CustomerJourney],
+        journey_indices: list[int],
+        route_destination_indices: list[int],
+        name_mapping: list[str],
 ) -> None:
     route_destination_names = [name_mapping[destination_index] for destination_index in route_destination_indices]
     first_position_by_destination: dict[str, int] = {}
@@ -90,8 +105,8 @@ def _append_destination_to_route_if_needed(route_destination_indices: list[int],
 
 
 def _calculate_pool_route_distance_km(
-    distance_matrix: list[list[float]],
-    route_destination_indices: list[int],
+        distance_matrix: list[list[float]],
+        route_destination_indices: list[int],
 ) -> float:
     if not route_destination_indices:
         return 0.0
@@ -99,19 +114,21 @@ def _calculate_pool_route_distance_km(
     total_distance_km = distance_matrix[0][route_destination_indices[0]]
 
     for previous_destination_index, next_destination_index in zip(
-        route_destination_indices,
-        route_destination_indices[1:],
+            route_destination_indices,
+            route_destination_indices[1:],
     ):
-        total_distance_km += _get_destination_distances(distance_matrix, previous_destination_index)[next_destination_index]
+        total_distance_km += _get_destination_distances(distance_matrix, previous_destination_index)[
+            next_destination_index]
 
     return total_distance_km
 
 
 def _deny_group_if_pool_distance_exceeds_limit(
-    customer_journeys: list[CustomerJourney],
-    journey_indices: list[int],
-    distance_matrix: list[list[float]],
-    route_destination_indices: list[int],
+        customer_journeys: list[CustomerJourney],
+        journey_indices: list[int],
+        distance_matrix: list[list[float]],
+        route_destination_indices: list[int],
+        denied_journey_indices: list[int] | None = None,
 ) -> None:
     if not journey_indices:
         return
@@ -121,13 +138,20 @@ def _deny_group_if_pool_distance_exceeds_limit(
     max_pool_distance_km = __MAX_POOL_DISTANCE_PER_PERSON_KM__ * num_passengers
 
     if total_pool_distance_km > max_pool_distance_km:
-        _deny_group(customer_journeys, journey_indices)
+        denied_indices = journey_indices if denied_journey_indices is None else denied_journey_indices
+        _deny_group(customer_journeys, denied_indices, TaxiPoolingDenyReason.POOL_DISTANCE_EXCEEDED)
+
+        denied_index_set = set(denied_indices)
+        rescheduled_indices = [
+            journey_index for journey_index in journey_indices if journey_index not in denied_index_set
+        ]
+        _reset_group_to_waiting(customer_journeys, rescheduled_indices)
 
 
 def _deny_routes_exceeding_max_distance(
-    customer_journeys: list[CustomerJourney],
-    distance_matrix: list[list[float]],
-    name_mapping: list[str],
+        customer_journeys: list[CustomerJourney],
+        distance_matrix: list[list[float]],
+        name_mapping: list[str],
 ) -> None:
     for destination_index, destination_name in enumerate(name_mapping):
         source_distance_km = distance_matrix[0][destination_index]
@@ -160,8 +184,6 @@ def _fill_group_with_nearest_destinations(customer_journeys: list[CustomerJourne
             current_members_in_group += 1
 
 
-
-
 def pool_taxi_rides(customer_journeys: list[CustomerJourney],
                     distance_matrix: list[list[float]], name_mapping: list[str]) -> None:
     _deny_routes_exceeding_max_distance(customer_journeys, distance_matrix, name_mapping)
@@ -185,6 +207,7 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
         current_group += 1
         current_members_in_group = 0
         current_group_journey_indices: list[int] = []
+        current_destination_journey_indices: list[int] = []
         current_route_destination_indices: list[int] = []
 
         for journey_index in waiting_customers:
@@ -200,14 +223,17 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
                     current_group_journey_indices,
                     distance_matrix,
                     current_route_destination_indices,
+                    current_destination_journey_indices,
                 )
                 current_group += 1
                 current_members_in_group = 0
                 current_group_journey_indices = []
+                current_destination_journey_indices = []
                 current_route_destination_indices = []
 
             _assign_to_group(customer_journeys, journey_index, current_group)
             current_group_journey_indices.append(journey_index)
+            current_destination_journey_indices.append(journey_index)
             _append_destination_to_route_if_needed(current_route_destination_indices, nearest_destination_index)
             current_members_in_group += 1
 
@@ -235,4 +261,5 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
             current_group_journey_indices,
             distance_matrix,
             current_route_destination_indices,
+            current_destination_journey_indices,
         )

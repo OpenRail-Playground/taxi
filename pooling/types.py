@@ -10,6 +10,11 @@ class TaxiPoolingStatus(StrEnum):
     STILL_WAITING = "STILL_WAITING"
 
 
+class TaxiPoolingDenyReason(StrEnum):
+    MAX_ROUTE_DISTANCE_EXCEEDED = "MAX_ROUTE_DISTANCE_EXCEEDED"
+    POOL_DISTANCE_EXCEEDED = "POOL_DISTANCE_EXCEEDED"
+
+
 class CustomerJourney(TypedDict):
     id: str
     source_lat: float
@@ -20,3 +25,4 @@ class CustomerJourney(TypedDict):
     status: TaxiPoolingStatus
     pool_number: int
     intermediate_stops: list[str]
+    deny_reason: TaxiPoolingDenyReason | None
