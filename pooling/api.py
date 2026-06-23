@@ -3,14 +3,20 @@ from __future__ import annotations
 import csv
 import os
 from io import StringIO
+from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from pooling.matrix import get_distance_matrix_and_destination_mapping
 from pooling.pooling import pool_taxi_rides
 from pooling.types import CustomerJourney, TaxiPoolingStatus
 
 app = FastAPI(title="Taxi Pooling API")
+
+WEB_DIR = Path(__file__).resolve().parent / "web"
+app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 _REQUIRED_COLUMNS = {
     "id",
@@ -23,9 +29,10 @@ _REQUIRED_COLUMNS = {
 
 
 def _parse_customer_journeys_from_csv(content: str) -> list[CustomerJourney]:
-    reader = csv.DictReader(StringIO(content))
+    reader = csv.DictReader(StringIO(content), delimiter=";")
     if reader.fieldnames is None:
-        raise ValueError("CSV doesn't contain valid header (id, source_lat, source_lon, destination_name, destination_lat, destination_lon)")
+        raise ValueError(
+            "CSV doesn't contain valid header (id, source_lat, source_lon, destination_name, destination_lat, destination_lon)")
 
     missing_columns = _REQUIRED_COLUMNS - set(reader.fieldnames)
     if missing_columns:
@@ -45,6 +52,7 @@ def _parse_customer_journeys_from_csv(content: str) -> list[CustomerJourney]:
                     status=TaxiPoolingStatus.WAITING,
                     pool_number=0,
                     intermediate_stops=[],
+                    deny_reason=None,
                 )
             )
         except (TypeError, ValueError) as exc:
@@ -60,12 +68,17 @@ def _get_source_coordinates(customer_journeys: list[CustomerJourney]) -> tuple[f
     first_source = (customer_journeys[0]["source_lon"], customer_journeys[0]["source_lat"])
 
     if any(
-        (journey["source_lon"], journey["source_lat"]) != first_source
-        for journey in customer_journeys
+            (journey["source_lon"], journey["source_lat"]) != first_source
+            for journey in customer_journeys
     ):
         raise ValueError("All customer journeys must have the same source coordinates")
 
     return first_source
+
+
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+async def index() -> FileResponse:
+    return FileResponse(WEB_DIR / "index.html")
 
 
 @app.post("/pool-taxis")
@@ -91,5 +104,3 @@ async def pool_taxis(file: UploadFile = File(...)) -> list[CustomerJourney]:
 
     pool_taxi_rides(customer_journeys, distance_matrix, name_mapping)
     return customer_journeys
-
-
