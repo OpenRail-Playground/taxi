@@ -1,0 +1,187 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: #f8f8f6;
+}
+
+.taxi-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.taxi-brand {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.taxi-brand__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.taxi-brand__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: #ec0016;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 0.375rem;
+}
+
+.taxi-brand__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.taxi-kicker {
+  color: #767676;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+}
+
+.taxi-hero {
+  margin-bottom: 2rem;
+}
+
+.taxi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.taxi-panel {
+  background: #fff;
+  border: 1px solid #d7d7d2;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+}
+
+.taxi-panel__headline {
+  margin-top: 0;
+}
+
+.taxi-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.taxi-file-input {
+  width: 100%;
+}
+
+.taxi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.taxi-notification {
+  margin-top: 1rem;
+}
+
+.taxi-help {
+  margin-top: 1.5rem;
+}
+
+.taxi-empty-state {
+  min-height: 12rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #767676;
+  border: 1px dashed #b9b9b2;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #fafaf8;
+}
+
+.taxi-summary {
+  display: grid;
+  gap: 1rem;
+}
+
+.taxi-summary__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.taxi-summary-card {
+  border: 1px solid #d7d7d2;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #fcfcfb;
+}
+
+.taxi-summary-card__label {
+  margin: 0;
+  color: #767676;
+  font-size: 0.9rem;
+}
+
+.taxi-summary-card__value {
+  margin: 0.3rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.taxi-pool-groups {
+  display: grid;
+  gap: 1rem;
+}
+
+.taxi-pool-group {
+  border: 1px solid #d7d7d2;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.taxi-pool-group__title {
+  margin: 0 0 0.5rem;
+}
+
+.taxi-pool-group__list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.taxi-results-panel {
+  margin-top: 1.5rem;
+}
+
+.taxi-table-wrapper {
+  overflow-x: auto;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .taxi-page,
+  .taxi-brand {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .taxi-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+

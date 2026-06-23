@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Mini-Weboberfläche für die Taxi-Pooling-API mit CSV-Upload und Ergebnisdarstellung."
+    />
+    <title>Taxi Pooling</title>
+    <link
+      rel="stylesheet"
+      href="https://db-ui.github.io/core/css/enterprise/db-ui-core.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://db-ui.github.io/core/css/pattern-scaffolding-project-specific.css"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body class="tpl-intro">
+    <header class="rea-header" role="banner">
+      <div class="cmp-brand taxi-brand">
+        <a href="/" title="Taxi Pooling Startseite" rel="home" class="taxi-brand__link">
+          <span class="taxi-brand__logo">DB</span>
+          <span class="taxi-brand__title">Taxi Pooling</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="taxi-page">
+      <section class="taxi-hero">
+        <p class="taxi-kicker">Mini-Weboberfläche</p>
+        <h1 class="elm-headline">CSV hochladen und Pooling-Ergebnisse direkt ansehen</h1>
+        <p>
+          Diese Oberfläche lädt eine CSV-Datei zur bestehenden API hoch und zeigt die
+          berechneten Fahrgastgruppen, Statuswerte und Zwischenhalte direkt im Browser an.
+        </p>
+      </section>
+
+      <section class="taxi-grid">
+        <article class="taxi-panel">
+          <h2 class="elm-headline taxi-panel__headline">CSV hochladen</h2>
+          <p>
+            Erforderliche Spalten: <code>id</code>, <code>source_lat</code>,
+            <code>source_lon</code>, <code>destination_name</code>,
+            <code>destination_lat</code>, <code>destination_lon</code>.
+          </p>
+
+          <form id="upload-form" class="taxi-form">
+            <label class="elm-label" for="csv-file">CSV-Datei auswählen</label>
+            <input
+              class="elm-input taxi-file-input"
+              id="csv-file"
+              name="file"
+              type="file"
+              accept=".csv,text/csv"
+              required
+            />
+
+            <div class="taxi-actions">
+              <button
+                class="elm-button"
+                data-variant="brand-primary"
+                type="submit"
+                id="submit-button"
+              >
+                Pooling berechnen
+              </button>
+              <a class="elm-button" data-variant="secondary" href="/sample.csv">
+                Beispiel-CSV herunterladen
+              </a>
+            </div>
+          </form>
+
+          <div
+            id="status-message"
+            class="cmp-notification taxi-notification is-hidden"
+            data-type="informative"
+            aria-live="polite"
+          ></div>
+
+          <details class="cmp-accordion taxi-help">
+            <summary>Hinweise</summary>
+            <p>
+              Die Berechnung nutzt im Backend die konfigurierte
+              <code>ORS_API_TOKEN</code>-Umgebungsvariable für die Distanzmatrix.
+            </p>
+            <p>
+              Alle Fahrten in einer Datei müssen dieselben Startkoordinaten verwenden.
+            </p>
+          </details>
+        </article>
+
+        <article class="taxi-panel">
+          <h2 class="elm-headline taxi-panel__headline">Ergebnisübersicht</h2>
+          <div id="summary" class="taxi-summary is-hidden">
+            <div class="taxi-summary__cards" id="summary-cards"></div>
+            <div id="pool-groups"></div>
+          </div>
+          <div id="empty-state" class="taxi-empty-state">
+            Noch keine Ergebnisse vorhanden. Lade eine CSV hoch, um das Pooling zu starten.
+          </div>
+        </article>
+      </section>
+
+      <section class="taxi-panel taxi-results-panel is-hidden" id="results-panel">
+        <h2 class="elm-headline taxi-panel__headline">Pooling-Ergebnisse im Detail</h2>
+        <div class="taxi-table-wrapper">
+          <table class="cmp-table" id="results-table">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Ziel</th>
+                <th scope="col">Status</th>
+                <th scope="col">Ablehnungsgrund</th>
+                <th scope="col">Pool</th>
+                <th scope="col">Zwischenhalte</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
