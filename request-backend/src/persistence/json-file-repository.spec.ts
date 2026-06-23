@@ -242,3 +242,84 @@ describe('findAll', () => {
     }
   });
 });
+
+describe('update', () => {
+  let tmpDir: string;
+  let repo: JsonFileRepository<{ id: string; name: string; count?: number }>;
+
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'taxi-repo-update-'));
+  });
+
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  beforeEach(() => {
+    repo = new JsonFileRepository('upd', tmpDir);
+  });
+
+  it('throws NotFoundError for an unknown id', async () => {
+    const { NotFoundError } = await import('./errors');
+    await expect(
+      repo.update('550e8400-e29b-41d4-a716-446655440000', { name: 'x' }),
+    ).rejects.toThrow(NotFoundError);
+  });
+
+  it('returns the merged entity and persists it', async () => {
+    const created = await repo.create({ name: 'original', count: 1 });
+    const updated = await repo.update(created.id, { name: 'changed' });
+    expect(updated).toEqual({ id: created.id, name: 'changed', count: 1 });
+    const found = await repo.findById(created.id);
+    expect(found).toEqual(updated);
+  });
+
+  it('id is immutable even if patch contains id', async () => {
+    const created = await repo.create({ name: 'stable' });
+    const updated = await repo.update(created.id, {
+      name: 'renamed',
+      ...(({ id: 'different-id' }) as any),
+    });
+    expect(updated.id).toBe(created.id);
+    const found = await repo.findById(created.id);
+    expect(found?.id).toBe(created.id);
+  });
+
+  it('shallow merge: nested objects are replaced not deep-merged', async () => {
+    type Nested = { id: string; nested: { a: number; b?: number } };
+    const freshDir = await fs.mkdtemp(path.join(os.tmpdir(), 'taxi-repo-upd-nested-'));
+    try {
+      const r = new JsonFileRepository<Nested>('nested', freshDir);
+      const created = await r.create({ nested: { a: 1, b: 2 } });
+      const updated = await r.update(created.id, { nested: { a: 9 } });
+      expect(updated.nested).toEqual({ a: 9 });
+    } finally {
+      await fs.rm(freshDir, { recursive: true, force: true });
+    }
+  });
+
+  it('undefined values in patch are treated as no-change', async () => {
+    const created = await repo.create({ name: 'keep', count: 5 });
+    const updated = await repo.update(created.id, {
+      name: undefined as any,
+      count: 10,
+    });
+    expect(updated.name).toBe('keep');
+    expect(updated.count).toBe(10);
+  });
+
+  it('update writes atomically — no *.tmp leftover', async () => {
+    const created = await repo.create({ name: 'atomic' });
+    await repo.update(created.id, { name: 'atomic-updated' });
+    const entries = await fs.readdir(path.join(tmpDir, 'upd'));
+    const tmps = entries.filter((e) => e.endsWith('.tmp'));
+    expect(tmps).toHaveLength(0);
+  });
+
+  it('throws InvalidIdError for path-traversal id', async () => {
+    const { InvalidIdError } = await import('./errors');
+    await expect(
+      repo.update('../etc/passwd', { name: 'x' }),
+    ).rejects.toThrow(InvalidIdError);
+  });
+});
