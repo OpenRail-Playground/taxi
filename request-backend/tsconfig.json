@@ -18,6 +18,7 @@
     "emitDecoratorMetadata": true,
     "sourceMap": true,
     "incremental": true,
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "moduleResolution": "node"
   },
   "include": ["src/**/*"],
