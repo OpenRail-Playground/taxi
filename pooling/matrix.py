@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 
 from pooling_types import CustomerJourney
 
@@ -11,19 +12,21 @@ def get_distance_matrix_and_destination_mapping(
     customer_journeys: list[CustomerJourney],
     api_token: str,
 ) -> list[list[float]]:
-    destination_coordinates = set()
-    destination_names = set()
+    destination_coordinates = []
+    destination_names = ["Bielefeld"]
+    destination_name_set = {"Bielefeld"}
     for journey in customer_journeys:
-        coordinates = [journey["destination_lon"], journey["destination_lat"]]
-        if destination_coordinates in destination_names:
+        coordinates = (journey["destination_lon"], journey["destination_lat"])
+        if journey["destination_name"] in destination_name_set:
             continue
 
-        destination_coordinates.add(coordinates)
-        destination_names.add(journey["destination_name"])
+        destination_coordinates.append(coordinates)
+        destination_names.append(journey["destination_name"])
+        destination_name_set.add(journey["destination_name"])
 
-    locations = [
-        [source_lon, source_lat] + [coordinates]
-        for coordinates in destination_coordinates
+    locations = [[source_lon, source_lat]] + [
+        [destination_lon, destination_lat]
+        for destination_lon, destination_lat in destination_coordinates
     ]
 
     headers = {
@@ -40,4 +43,15 @@ def get_distance_matrix_and_destination_mapping(
     response.raise_for_status()
 
     data = response.json()
-    return data["distances"]
+    distances = data["distances"]
+
+    destination_names_df = pd.DataFrame(columns=destination_names)
+
+    for row_index, row_values in enumerate(distances):
+        if row_index >= len(destination_names):
+            break
+        destination_names_df.loc[destination_names[row_index]] = row_values
+
+    # print(destination_names_df)
+
+    return destination_names_df
