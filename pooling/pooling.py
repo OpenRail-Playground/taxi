@@ -74,6 +74,25 @@ def _reset_group_to_waiting(customer_journeys: list[CustomerJourney], journey_in
         customer_journeys[journey_index]["deny_reason"] = None
 
 
+def _renumber_scheduled_groups_contiguously(customer_journeys: list[CustomerJourney]) -> None:
+    old_to_new_group: dict[int, int] = {}
+    next_group_number = 1
+
+    for journey in customer_journeys:
+        if journey["status"] != TaxiPoolingStatus.SCHEDULED:
+            continue
+
+        old_group = journey["pool_number"]
+        if old_group <= 0:
+            continue
+
+        if old_group not in old_to_new_group:
+            old_to_new_group[old_group] = next_group_number
+            next_group_number += 1
+
+        journey["pool_number"] = old_to_new_group[old_group]
+
+
 def _update_group_intermediate_stops(
         customer_journeys: list[CustomerJourney],
         journey_indices: list[int],
@@ -204,7 +223,6 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
         if not waiting_customers:
             continue
 
-        current_group += 1
         current_members_in_group = 0
         current_group_journey_indices: list[int] = []
         current_destination_journey_indices: list[int] = []
@@ -225,11 +243,13 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
                     current_route_destination_indices,
                     current_destination_journey_indices,
                 )
-                current_group += 1
                 current_members_in_group = 0
                 current_group_journey_indices = []
                 current_destination_journey_indices = []
                 current_route_destination_indices = []
+
+            if current_members_in_group == 0:
+                current_group += 1
 
             _assign_to_group(customer_journeys, journey_index, current_group)
             current_group_journey_indices.append(journey_index)
@@ -263,3 +283,6 @@ def pool_taxi_rides(customer_journeys: list[CustomerJourney],
             current_route_destination_indices,
             current_destination_journey_indices,
         )
+
+    _renumber_scheduled_groups_contiguously(customer_journeys)
+
