@@ -323,3 +323,47 @@ describe('update', () => {
     ).rejects.toThrow(InvalidIdError);
   });
 });
+
+describe('delete', () => {
+  let tmpDir: string;
+  let repo: JsonFileRepository<{ id: string; name: string }>;
+
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'taxi-repo-delete-'));
+  });
+
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  beforeEach(() => {
+    repo = new JsonFileRepository('del', tmpDir);
+  });
+
+  it('resolves and subsequent findById returns null', async () => {
+    const created = await repo.create({ name: 'bye' });
+    await expect(repo.delete(created.id)).resolves.toBeUndefined();
+    await expect(repo.findById(created.id)).resolves.toBeNull();
+  });
+
+  it('throws NotFoundError for unknown id', async () => {
+    const { NotFoundError } = await import('./errors');
+    await expect(
+      repo.delete('550e8400-e29b-41d4-a716-446655440000'),
+    ).rejects.toThrow(NotFoundError);
+  });
+
+  it('throws InvalidIdError for path-traversal id', async () => {
+    const { InvalidIdError } = await import('./errors');
+    await expect(repo.delete('../etc/passwd')).rejects.toThrow(InvalidIdError);
+  });
+
+  it('does not affect other entities in the same folder', async () => {
+    const a = await repo.create({ name: 'keep' });
+    const b = await repo.create({ name: 'remove' });
+    await repo.delete(b.id);
+    const all = await repo.findAll();
+    expect(all.map((e) => e.id)).toContain(a.id);
+    expect(all.map((e) => e.id)).not.toContain(b.id);
+  });
+});
