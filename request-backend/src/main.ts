@@ -1,14 +1,8 @@
+import './load-env';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { createAppLogger } from './common/logger.factory';
-
-// Load RIS keys (and any other vars) from a local .env file if present.
-// Uses Node's built-in env-file loader so no extra dependency is needed.
-try {
-  process.loadEnvFile();
-} catch {
-  // No .env file — fall back to the ambient environment.
-}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
