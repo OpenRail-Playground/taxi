@@ -117,21 +117,38 @@ export interface ValidatedBooking {
 }
 
 /**
- * A single stop on a journey, as returned by the RIS::Journeys API.
- * Stops after the passenger's destination are excluded.
+ * One point on the disrupted journey (origin, destination, or stranding stop).
+ *
+ * `scheduledTime` semantics depend on which slot the point fills:
+ *   - origin       → scheduled DEPARTURE
+ *   - destination  → scheduled ARRIVAL
+ *   - strandedAt   → scheduled ARRIVAL at that stop
  */
-export interface JourneyStop {
+export interface JourneyStopPoint {
   /** EVA station number, e.g. "8000085" */
   evaNumber: string;
   /** Human-readable station name, e.g. "Düsseldorf Hbf" */
   name: string;
-  /** Scheduled departure time as ISO-8601 string, e.g. "2026-05-29T21:29:00+02:00" */
+  /** ISO-8601 timestamp, e.g. "2026-05-29T21:29:00+02:00" */
   scheduledTime: string;
-  /** True when this stop is cancelled (train does not serve it) */
-  cancelled: boolean;
 }
 
-/** Response shape for GET /bookings/:auftragsnummer/journey-stops */
+/**
+ * Response shape for GET /bookings/:auftragsnummer/journey-stops.
+ *
+ * The backend collapses the full RIS event list into the three points the
+ * passenger actually cares about: where the journey was meant to begin,
+ * where it was meant to end, and (if disrupted) the last stop the train
+ * still reaches.
+ *
+ * `strandedAt === null` ⇒ train serves the booked destination as planned.
+ *
+ * Fully cancelled journeys (train never leaves the booked origin) are
+ * surfaced as 404 by the backend — they never reach this response shape.
+ */
 export interface JourneyStopsResponse {
-  stops: JourneyStop[];
+  origin: JourneyStopPoint;
+  destination: JourneyStopPoint;
+  /** Last stop the train still reaches before disruption; null when undisrupted. */
+  strandedAt: JourneyStopPoint | null;
 }

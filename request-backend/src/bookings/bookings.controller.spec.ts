@@ -37,21 +37,26 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
     controller = module.get(BookingsController);
   });
 
-  it('returns 200 with { stops } for a known booking', async () => {
+  it('returns 200 with the JourneyStopsResponse for a known booking', async () => {
     bookings.findByAuftragsnummer.mockReturnValue(booking);
-    const stops = [
-      {
+    const response = {
+      origin: {
         evaNumber: '1',
         name: 'Köln Hbf',
         scheduledTime: '2026-05-29T20:00:00+02:00',
-        cancelled: false,
       },
-    ];
-    journeyStops.getStops.mockResolvedValue(stops);
+      destination: {
+        evaNumber: '2',
+        name: 'Düsseldorf Hbf',
+        scheduledTime: '2026-05-29T20:30:00+02:00',
+      },
+      strandedAt: null,
+    };
+    journeyStops.getStops.mockResolvedValue(response);
 
     const result = await controller.getJourneyStops('258376672881');
 
-    expect(result).toEqual({ stops });
+    expect(result).toEqual(response);
     expect(bookings.findByAuftragsnummer).toHaveBeenCalledWith('258376672881');
     expect(journeyStops.getStops).toHaveBeenCalledWith(
       booking.trainNumber,

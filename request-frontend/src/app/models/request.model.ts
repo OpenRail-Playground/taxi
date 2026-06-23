@@ -32,11 +32,11 @@ export interface JourneyInfo {
   /** Short note about the train, shown on the Journey step. */
   trainNote: string;
   origin: { station: string; departure: string };
-  /** Where the disruption forces the passenger off the train. */
-  disruption: { station: string; arrival: string; reason: string };
+  /** Stranding stop. Null when the train runs as planned. */
+  disruption: { station: string; arrival: string; reason: string } | null;
   destination: { station: string; plannedArrival: string };
-  /** Leg that has to be covered by taxi. */
-  taxi: { from: string; to: string };
+  /** Leg that has to be covered by taxi. Null when no disruption. */
+  taxi: { from: string; to: string } | null;
 }
 
 /** Demo data mirroring the mockups (Hamburg → Köln, disrupted at Bielefeld). */

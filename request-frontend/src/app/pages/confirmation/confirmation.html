@@ -19,7 +19,6 @@
       </db-notification>
     }
 
-    <!-- Journey Information -->
     <db-card spacing="medium" class="card">
       <h2 class="card-title">
         <db-icon icon="train" weight="24" />
@@ -45,30 +44,28 @@
           </div>
         </li>
 
-        <li class="timeline-stop is-disruption">
-          <span class="timeline-rail"><span class="timeline-dot"></span></span>
-          <div class="timeline-body">
-            <div class="timeline-row">
-              <span class="timeline-station">
-                {{ journey().disruption.station }}
-              </span>
-              <db-tag
-                semantic="critical"
-                emphasis="strong"
-                icon="exclamation_mark_triangle">
-                Disruption
-              </db-tag>
+        @if (journey().disruption; as disruption) {
+          <li class="timeline-stop is-disruption">
+            <span class="timeline-rail"><span class="timeline-dot"></span></span>
+            <div class="timeline-body">
+              <div class="timeline-row">
+                <span class="timeline-station">{{ disruption.station }}</span>
+                <db-tag
+                  semantic="critical"
+                  emphasis="strong"
+                  icon="exclamation_mark_triangle">
+                  Disruption
+                </db-tag>
+              </div>
+              <div class="timeline-row">
+                <span class="timeline-alert">{{ disruption.reason }}</span>
+                <span class="timeline-meta">
+                  Arrival: {{ disruption.arrival }}
+                </span>
+              </div>
             </div>
-            <div class="timeline-row">
-              <span class="timeline-alert">
-                {{ journey().disruption.reason }}
-              </span>
-              <span class="timeline-meta">
-                Arrival: {{ journey().disruption.arrival }}
-              </span>
-            </div>
-          </div>
-        </li>
+          </li>
+        }
 
         <li class="timeline-stop is-destination">
           <span class="timeline-rail"><span class="timeline-dot"></span></span>
@@ -88,17 +85,18 @@
         </li>
       </ol>
 
-      <db-notification
-        variant="standalone"
-        semantic="warning"
-        icon="taxi"
-        headline="Taxi required"
-        class="taxi">
-        From {{ journey().taxi.from }} to {{ journey().taxi.to }}
-      </db-notification>
+      @if (journey().taxi; as taxi) {
+        <db-notification
+          variant="standalone"
+          semantic="warning"
+          icon="taxi"
+          headline="Taxi required"
+          class="taxi">
+          From {{ taxi.from }} to {{ taxi.to }}
+        </db-notification>
+      }
     </db-card>
 
-    <!-- Contact Details -->
     <db-card spacing="medium" class="card">
       <h2 class="card-title">
         <db-icon icon="telephone" weight="24" />
@@ -121,7 +119,6 @@
       </dl>
     </db-card>
 
-    <!-- Passenger Info -->
     <db-card spacing="medium" class="card">
       <h2 class="card-title">
         <db-icon icon="persons" weight="24" />

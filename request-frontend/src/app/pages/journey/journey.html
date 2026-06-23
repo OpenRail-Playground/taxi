@@ -5,8 +5,12 @@
     <header class="page-head">
       <h1>Journey</h1>
       <p>
-        Here is the relevant part of your journey. Your train service is
-        disrupted from the station shown in red.
+        @if (journey().disruption; as disruption) {
+          Here is the relevant part of your journey. Your train service is
+          disrupted from the station shown in red.
+        } @else {
+          Your booked train runs as planned. No taxi assistance is required.
+        }
       </p>
     </header>
 
@@ -31,18 +35,16 @@
           </div>
         </li>
 
-        <li class="timeline-stop is-disruption">
-          <span class="timeline-rail"><span class="timeline-dot"></span></span>
-          <div class="timeline-body">
-            <span class="timeline-station">
-              {{ journey().disruption.station }}
-            </span>
-            <span class="timeline-alert">Disruption station</span>
-            <span class="timeline-time">{{
-              journey().disruption.arrival
-            }}</span>
-          </div>
-        </li>
+        @if (journey().disruption; as disruption) {
+          <li class="timeline-stop is-disruption">
+            <span class="timeline-rail"><span class="timeline-dot"></span></span>
+            <div class="timeline-body">
+              <span class="timeline-station">{{ disruption.station }}</span>
+              <span class="timeline-alert">Disruption station</span>
+              <span class="timeline-time">{{ disruption.arrival }}</span>
+            </div>
+          </li>
+        }
 
         <li class="timeline-stop is-destination">
           <span class="timeline-rail"><span class="timeline-dot"></span></span>
@@ -59,14 +61,25 @@
       </ol>
     </section>
 
-    <db-notification
-      variant="standalone"
-      icon="information_circle"
-      [headline]="journey().disruption.reason"
-      class="disruption">
-      Your train is no longer running from {{ journey().disruption.station }}.
-      You may be eligible for a taxi or another replacement service.
-    </db-notification>
+    @if (journey().disruption; as disruption) {
+      <db-notification
+        variant="standalone"
+        icon="information_circle"
+        [headline]="disruption.reason"
+        class="disruption">
+        Your train is no longer running from {{ disruption.station }}. You may
+        be eligible for a taxi or another replacement service.
+      </db-notification>
+    } @else {
+      <db-notification
+        variant="standalone"
+        semantic="successful"
+        icon="check_circle"
+        headline="No disruption"
+        class="disruption">
+        Your train serves {{ journey().destination.station }} as scheduled.
+      </db-notification>
+    }
 
     <db-button
       variant="brand"

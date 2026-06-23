@@ -55,14 +55,14 @@ curl -s http://localhost:3000/bookings/258376699013/journey-stops
 
 Behaviour:
 
-- `200 OK` with `{ stops: JourneyStop[] }` — all departure stops from origin up to and including the passenger's destination, each with `evaNumber`, `name`, `scheduledTime` (ISO-8601), and `cancelled`.
-- `404 Not Found` when the booking number is unknown, or when the RIS API finds no matching journey for the train and date.
+- `200 OK` with `{ origin, destination, strandedAt }` — three named stops with `evaNumber`, `name`, and `scheduledTime` (ISO-8601). `origin.scheduledTime` is the scheduled departure; `destination.scheduledTime` and `strandedAt.scheduledTime` are scheduled arrivals. `strandedAt` is the last stop the train still reaches before disruption, or `null` when the train serves the booked destination as planned.
+- `404 Not Found` when the booking number is unknown, when RIS finds no matching journey for the train and date, when the destination is not on the journey, or when the train never leaves its origin (whole journey cancelled) — the passenger never strands, so there is nothing to render.
 - `422 Unprocessable Entity` when the stored `trainNumber` cannot be parsed into a category + number.
 - `502 Bad Gateway` when the RIS API is unreachable or returns an unexpected error.
 
 Requires four environment variables (see `.env.example`): `RIS_V1_CLIENT_ID`, `RIS_V1_API_KEY`, `RIS_V2_CLIENT_ID`, `RIS_V2_API_KEY`.
 
-Response types live in [`@taxi/shared`](../shared/src/index.ts) (`JourneyStop`, `JourneyStopsResponse`).
+Response types live in [`@taxi/shared`](../shared/src/index.ts) (`JourneyStopPoint`, `JourneyStopsResponse`).
 
 ## Create / fetch help request (issue [#11](https://github.com/OpenRail-Playground/taxi/issues/11))
 

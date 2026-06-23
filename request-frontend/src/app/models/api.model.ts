@@ -22,15 +22,17 @@ export interface ValidatedBooking {
   passengerCount: number;
 }
 
-/** A single stop on the journey, from `GET /bookings/:id/journey-stops`. */
-export interface JourneyStop {
+/** One point on the disrupted journey, from `GET /bookings/:id/journey-stops`. */
+export interface JourneyStopPoint {
   evaNumber: string;
   name: string;
-  /** ISO-8601 timestamp, e.g. "2026-05-29T21:29:00+02:00". */
+  /** ISO-8601 timestamp; scheduled departure at origin, scheduled arrival elsewhere. */
   scheduledTime: string;
-  cancelled: boolean;
 }
 
 export interface JourneyStopsResponse {
-  stops: JourneyStop[];
+  origin: JourneyStopPoint;
+  destination: JourneyStopPoint;
+  /** Last stop the train still reaches before disruption; null when undisrupted. */
+  strandedAt: JourneyStopPoint | null;
 }

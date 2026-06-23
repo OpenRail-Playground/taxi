@@ -62,11 +62,10 @@ export class BookingsController {
     if (!record) {
       throw new NotFoundException(`Booking ${auftragsnummer} not found.`);
     }
-    const stops = await this.journeyStops.getStops(
+    return this.journeyStops.getStops(
       record.trainNumber,
       record.travelDate,
       record.destinationStation,
     );
-    return { stops };
   }
 }
