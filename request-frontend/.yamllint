@@ -3,8 +3,6 @@ extends: default
 
 ignore:
   - pnpm-lock.yaml
-  - .compliance-config.yaml
-  - "**/*.aria.yml"
 
 rules:
   line-length:
