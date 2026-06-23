@@ -1,11 +1,16 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { DBPage, DBSection } from '@db-ux/ngx-core-components';
+import {
+  DBBrand,
+  DBHeader,
+  DBPage,
+  DBSection,
+} from '@db-ux/ngx-core-components';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  imports: [RouterOutlet, DBPage, DBSection],
+  imports: [RouterOutlet, DBPage, DBHeader, DBBrand, DBSection],
 })
 export class AppComponent {}
