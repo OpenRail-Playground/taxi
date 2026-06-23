@@ -1,0 +1,80 @@
+<db-section spacing="small">
+  <div class="page">
+    <app-journey-stepper [current]="3" />
+
+    <header class="page-head">
+      <h1>Passenger Data</h1>
+      <p>
+        Please check your contact details and provide information about the
+        passengers.
+      </p>
+    </header>
+
+    <section class="block">
+      <h2 class="block-title">Contact details</h2>
+
+      <db-input
+        label="Phone number"
+        type="tel"
+        [required]="true"
+        iconTrailing="pen"
+        [value]="contact().phone"
+        (valueChange)="updatePhone($event)"
+        message="Used for updates about your request." />
+
+      <db-input
+        label="E-mail"
+        type="email"
+        iconTrailing="pen"
+        [value]="contact().email"
+        (valueChange)="updateEmail($event)"
+        message="Used for updates about your request." />
+    </section>
+
+    <db-divider></db-divider>
+
+    <section class="block">
+      <h2 class="block-title">Passenger Info</h2>
+
+      <div class="counters">
+        <app-passenger-counter
+          label="Adults"
+          icon="person"
+          [min]="1"
+          [value]="passengers().adults"
+          (valueChange)="setCount('adults', $event)" />
+        <db-divider></db-divider>
+        <app-passenger-counter
+          label="Kids"
+          icon="family_compartment"
+          [value]="passengers().kids"
+          (valueChange)="setCount('kids', $event)" />
+        <db-divider></db-divider>
+        <app-passenger-counter
+          label="Bicycle"
+          icon="bike"
+          [value]="passengers().bicycle"
+          (valueChange)="setCount('bicycle', $event)" />
+        <db-divider></db-divider>
+        <app-passenger-counter
+          label="Wheelchair"
+          icon="db_wheelchair"
+          [value]="passengers().wheelchair"
+          (valueChange)="setCount('wheelchair', $event)" />
+      </div>
+    </section>
+
+    <div class="actions">
+      <db-button variant="brand" width="full" (click)="continue()">
+        Continue
+      </db-button>
+      <db-infotext
+        icon="lock_closed"
+        semantic="neutral"
+        size="small"
+        class="actions-secure">
+        Secure connection
+      </db-infotext>
+    </div>
+  </div>
+</db-section>

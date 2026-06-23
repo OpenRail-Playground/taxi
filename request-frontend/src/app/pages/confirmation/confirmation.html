@@ -1,0 +1,167 @@
+<db-section spacing="small">
+  <div class="page">
+    <app-journey-stepper [current]="4" />
+
+    <header class="page-head">
+      <h1>Please confirm your request</h1>
+      <p>
+        Please check all details below. You can go back and change your
+        information if needed.
+      </p>
+    </header>
+
+    @if (submitted()) {
+      <db-notification
+        variant="standalone"
+        semantic="successful"
+        headline="Request submitted">
+        We received your request and will contact you shortly.
+      </db-notification>
+    }
+
+    <!-- Journey Information -->
+    <db-card spacing="medium" class="card">
+      <h2 class="card-title">
+        <db-icon icon="train" weight="24" />
+        Journey Information
+      </h2>
+
+      <ol class="timeline">
+        <li class="timeline-stop is-origin">
+          <span class="timeline-rail"><span class="timeline-dot"></span></span>
+          <div class="timeline-body">
+            <div class="timeline-row">
+              <span class="timeline-station">{{
+                journey().origin.station
+              }}</span>
+              <db-tag semantic="neutral" emphasis="strong">
+                {{ journey().trainNumber }}
+              </db-tag>
+            </div>
+            <p class="timeline-meta">
+              Departure: {{ journey().origin.departure }}
+            </p>
+            <p class="timeline-hint">… intermediate stops …</p>
+          </div>
+        </li>
+
+        <li class="timeline-stop is-disruption">
+          <span class="timeline-rail"><span class="timeline-dot"></span></span>
+          <div class="timeline-body">
+            <div class="timeline-row">
+              <span class="timeline-station">
+                {{ journey().disruption.station }}
+              </span>
+              <db-tag
+                semantic="critical"
+                emphasis="strong"
+                icon="exclamation_mark_triangle">
+                Disruption
+              </db-tag>
+            </div>
+            <div class="timeline-row">
+              <span class="timeline-alert">
+                {{ journey().disruption.reason }}
+              </span>
+              <span class="timeline-meta">
+                Arrival: {{ journey().disruption.arrival }}
+              </span>
+            </div>
+          </div>
+        </li>
+
+        <li class="timeline-stop is-destination">
+          <span class="timeline-rail"><span class="timeline-dot"></span></span>
+          <div class="timeline-body">
+            <div class="timeline-row">
+              <span class="timeline-station">
+                {{ journey().destination.station }}
+              </span>
+            </div>
+            <div class="timeline-row">
+              <span class="timeline-meta">Final destination</span>
+              <span class="timeline-meta">
+                Arrival (planned): {{ journey().destination.plannedArrival }}
+              </span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <db-notification
+        variant="standalone"
+        semantic="warning"
+        icon="taxi"
+        headline="Taxi required"
+        class="taxi">
+        From {{ journey().taxi.from }} to {{ journey().taxi.to }}
+      </db-notification>
+    </db-card>
+
+    <!-- Contact Details -->
+    <db-card spacing="medium" class="card">
+      <h2 class="card-title">
+        <db-icon icon="telephone" weight="24" />
+        Contact Details
+      </h2>
+
+      <dl class="info">
+        <div class="info-row">
+          <dt class="info-key"><db-icon icon="person" /> Name</dt>
+          <dd class="info-val">{{ contact().name }}</dd>
+        </div>
+        <div class="info-row">
+          <dt class="info-key"><db-icon icon="telephone" /> Phone number</dt>
+          <dd class="info-val">{{ contact().phone }}</dd>
+        </div>
+        <div class="info-row">
+          <dt class="info-key"><db-icon icon="envelope" /> E-mail</dt>
+          <dd class="info-val">{{ contact().email }}</dd>
+        </div>
+      </dl>
+    </db-card>
+
+    <!-- Passenger Info -->
+    <db-card spacing="medium" class="card">
+      <h2 class="card-title">
+        <db-icon icon="persons" weight="24" />
+        Passenger Info
+      </h2>
+
+      <dl class="info">
+        @for (row of passengerRows(); track row.label) {
+          <div class="info-row">
+            <dt class="info-key">
+              <db-icon [icon]="row.icon" /> {{ row.label }}
+            </dt>
+            <dd class="info-val">{{ row.value }}</dd>
+          </div>
+        }
+      </dl>
+    </db-card>
+
+    <div class="actions">
+      <db-button variant="brand" width="full" (click)="submit()">
+        Submit Request
+      </db-button>
+      <db-button variant="outlined" width="full" (click)="edit()">
+        Edit details
+      </db-button>
+      <db-button
+        variant="outlined"
+        width="full"
+        icon="bin"
+        class="actions-cancel"
+        (click)="cancel()">
+        Cancel request
+      </db-button>
+      <db-infotext
+        icon="lock_closed"
+        semantic="neutral"
+        size="small"
+        class="actions-secure">
+        Secure connection
+      </db-infotext>
+    </div>
+  </div>
+</db-section>

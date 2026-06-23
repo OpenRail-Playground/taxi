@@ -1,16 +1,26 @@
 <db-page>
-  <db-header>
-    <db-brand brand>Taxi</db-brand>
-  </db-header>
-  <db-section spacing="small">
-    <h1>Taxi</h1>
-    <p>Frontend scaffolding is up. Real components land here next.</p>
-    <p>
-      Icon smoke test:
-      <db-icon icon="person" />
-      <db-icon icon="train" />
-      <db-icon icon="arrow_right" />
-    </p>
+  <header class="topbar" [attr.data-mode]="headerMode()">
+    @if (headerMode() === 'home') {
+      <db-brand class="topbar-brand">Taxi</db-brand>
+      <db-link class="topbar-help" href="#" [showIcon]="false">
+        Help
+        <db-icon icon="question_mark_circle" />
+      </db-link>
+    } @else {
+      <db-button
+        class="topbar-back"
+        variant="ghost"
+        icon="chevron_left"
+        [noText]="true"
+        (click)="back()">
+        Back
+      </db-button>
+      <db-brand class="topbar-brand">Taxi</db-brand>
+      <span class="topbar-spacer" aria-hidden="true"></span>
+    }
+  </header>
+
+  <main class="content">
     <router-outlet />
-  </db-section>
+  </main>
 </db-page>

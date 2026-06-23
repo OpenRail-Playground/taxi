@@ -1,0 +1,79 @@
+<db-section spacing="small">
+  <div class="page">
+    <app-journey-stepper [current]="2" />
+
+    <header class="page-head">
+      <h1>Journey</h1>
+      <p>
+        Here is the relevant part of your journey. Your train service is
+        disrupted from the station shown in red.
+      </p>
+    </header>
+
+    <db-notification
+      variant="standalone"
+      icon="train"
+      [headline]="journey().trainNumber"
+      class="train">
+      {{ journey().trainNote }}
+    </db-notification>
+
+    <section class="block">
+      <h2 class="block-title">Your journey</h2>
+
+      <ol class="timeline">
+        <li class="timeline-stop is-origin">
+          <span class="timeline-rail"><span class="timeline-dot"></span></span>
+          <div class="timeline-body">
+            <span class="timeline-station">{{ journey().origin.station }}</span>
+            <db-tag>Departure</db-tag>
+            <span class="timeline-time">{{ journey().origin.departure }}</span>
+          </div>
+        </li>
+
+        <li class="timeline-stop is-disruption">
+          <span class="timeline-rail"><span class="timeline-dot"></span></span>
+          <div class="timeline-body">
+            <span class="timeline-station">
+              {{ journey().disruption.station }}
+            </span>
+            <span class="timeline-alert">Disruption station</span>
+            <span class="timeline-time">{{
+              journey().disruption.arrival
+            }}</span>
+          </div>
+        </li>
+
+        <li class="timeline-stop is-destination">
+          <span class="timeline-rail"><span class="timeline-dot"></span></span>
+          <div class="timeline-body">
+            <span class="timeline-station">
+              {{ journey().destination.station }}
+            </span>
+            <db-tag>Final destination</db-tag>
+            <span class="timeline-time">
+              {{ journey().destination.plannedArrival }}
+            </span>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <db-notification
+      variant="standalone"
+      icon="information_circle"
+      [headline]="journey().disruption.reason"
+      class="disruption">
+      Your train is no longer running from {{ journey().disruption.station }}.
+      You may be eligible for a taxi or another replacement service.
+    </db-notification>
+
+    <db-button
+      variant="brand"
+      width="full"
+      iconTrailing="arrow_right"
+      (click)="continue()">
+      Continue
+    </db-button>
+  </div>
+</db-section>

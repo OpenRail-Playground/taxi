@@ -1,0 +1,14 @@
+<ol class="stepper">
+  @for (step of steps; track step; let i = $index) {
+    <li class="stepper-item" [attr.data-state]="state(i)">
+      <span class="stepper-marker">
+        @if (state(i) === 'done') {
+          <db-icon icon="check" weight="16" />
+        } @else {
+          {{ i + 1 }}
+        }
+      </span>
+      <span class="stepper-label">{{ step }}</span>
+    </li>
+  }
+</ol>

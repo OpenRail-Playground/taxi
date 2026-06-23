@@ -1,0 +1,190 @@
+:host {
+  display: block;
+}
+
+.page {
+  max-inline-size: 30rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-md);
+}
+
+.page-head {
+  h1 {
+    margin-block: 0 var(--db-spacing-fixed-2xs);
+  }
+
+  p {
+    margin: 0;
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  }
+}
+
+.card {
+  display: block;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--db-spacing-fixed-xs);
+  margin-block: 0 var(--db-spacing-fixed-md);
+  font-size: 1.125rem;
+}
+
+/* ---- Journey timeline ---- */
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-stop {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  column-gap: var(--db-spacing-fixed-sm);
+}
+
+.timeline-rail {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.timeline-dot {
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin-block-start: var(--db-spacing-fixed-3xs);
+  border: var(--db-border-width-2xs) solid
+    var(--db-adaptive-on-bg-basic-emphasis-60-default);
+  border-radius: var(--db-border-radius-full);
+  background: var(--db-neutral-bg-basic-level-1-default, #fff);
+  z-index: 1;
+}
+
+/* vertical connector running from a dot down to the next stop */
+.is-origin .timeline-rail::after,
+.is-disruption .timeline-rail::after {
+  content: '';
+  position: absolute;
+  inset-block: 1.3rem -0.6rem;
+  inline-size: 0;
+  border-inline-start: var(--db-border-width-2xs) dotted
+    var(--db-adaptive-on-bg-basic-emphasis-60-default);
+}
+
+.timeline-body {
+  padding-block-end: var(--db-spacing-fixed-md);
+}
+
+.timeline-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--db-spacing-fixed-sm);
+
+  & + & {
+    margin-block-start: var(--db-spacing-fixed-3xs);
+  }
+}
+
+.timeline-station {
+  font-weight: 700;
+  font-size: 1.0625rem;
+}
+
+.timeline-meta {
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  font-size: 0.9375rem;
+}
+
+.timeline-hint {
+  margin-block: var(--db-spacing-fixed-2xs) 0;
+  color: var(--db-adaptive-on-bg-basic-emphasis-60-default);
+  font-size: 0.875rem;
+}
+
+.timeline-alert {
+  color: var(--db-critical-on-bg-basic-emphasis-100-default);
+  font-weight: 600;
+}
+
+/* origin = green dot + solid green connector */
+.is-origin .timeline-dot {
+  border-color: var(--db-successful-on-bg-basic-emphasis-100-default);
+}
+
+.is-origin .timeline-rail::after {
+  border-inline-start-style: solid;
+  border-color: var(--db-successful-on-bg-basic-emphasis-100-default);
+}
+
+/* disruption = red dot + dotted red connector */
+.is-disruption .timeline-dot {
+  border-color: var(--db-critical-on-bg-basic-emphasis-100-default);
+}
+
+.is-disruption .timeline-rail::after {
+  border-color: var(--db-critical-on-bg-basic-emphasis-100-default);
+}
+
+.taxi {
+  margin-block-start: var(--db-spacing-fixed-sm);
+}
+
+/* ---- Info lists (contact / passengers) ---- */
+.info {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-sm);
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--db-spacing-fixed-md);
+}
+
+.info-key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--db-spacing-fixed-xs);
+  flex: 0 0 auto;
+  white-space: nowrap;
+  color: var(--db-adaptive-on-bg-basic-emphasis-90-default);
+
+  db-icon {
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  }
+}
+
+.info-val {
+  margin: 0;
+  min-inline-size: 0;
+  font-weight: 600;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Actions ---- */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--db-spacing-fixed-sm);
+  margin-block-start: var(--db-spacing-fixed-sm);
+}
+
+.actions-secure {
+  align-self: center;
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+}
+
+/* red label on the destructive action, matching the mockup */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host ::ng-deep .actions-cancel button {
+  color: var(--db-critical-on-bg-basic-emphasis-100-default);
+}
