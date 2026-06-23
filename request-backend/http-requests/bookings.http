@@ -1,0 +1,79 @@
+### Taxi Request Backend — HTTP requests
+# Run `pnpm dev` first (serves on http://localhost:3000).
+# Endpoints: GET /health, POST /bookings/validate, GET /bookings/:auftragsnummer/journey-stops
+#
+# The example Auftragsnummern below come from the local booking spreadsheet
+# (.local/Bookingdata_UPLOAD_custom_auftragsnummer.xlsx):
+#   123456789012 -> ICE 202, Köln Hbf,    2026-06-23, 2 Reisende
+#   987654321000 -> ICE 599, München Hbf, 2026-06-23, 1 Reisende
+
+@host = http://localhost:3000
+@auftragsnummer = 123456789012
+
+### Health check -> 200 { "status": "ok", "timestamp": "..." }
+GET {{host}}/health
+Accept: application/json
+
+###############################################################################
+# POST /bookings/validate
+###############################################################################
+
+### Validate booking (happy path) -> 200 { trainNumber, travelDate, destinationStation, passengerCount }
+POST {{host}}/bookings/validate
+Content-Type: application/json
+
+{
+  "auftragsnummer": "123456789012",
+  "lastName": "Mustermann"
+}
+
+### Validate booking (second known booking) -> 200
+POST {{host}}/bookings/validate
+Content-Type: application/json
+
+{
+  "auftragsnummer": "987654321000",
+  "lastName": "Musterfrau"
+}
+
+### Validate booking — unknown Auftragsnummer -> 404 Not Found
+POST {{host}}/bookings/validate
+Content-Type: application/json
+
+{
+  "auftragsnummer": "000000000000",
+  "lastName": "Mustermann"
+}
+
+### Validate booking — missing lastName -> 400 Bad Request
+POST {{host}}/bookings/validate
+Content-Type: application/json
+
+{
+  "auftragsnummer": "123456789012"
+}
+
+### Validate booking — empty body -> 400 Bad Request
+POST {{host}}/bookings/validate
+Content-Type: application/json
+
+{}
+
+###############################################################################
+# GET /bookings/:auftragsnummer/journey-stops
+###############################################################################
+
+### Journey stops (happy path) -> 200 { stops: JourneyStop[] }
+# Requires valid RIS_V*_CLIENT_ID / RIS_V*_API_KEY in .env.
+GET {{host}}/bookings/{{auftragsnummer}}/journey-stops
+Accept: application/json
+
+### Journey stops for the second known booking -> 200
+GET {{host}}/bookings/987654321000/journey-stops
+Accept: application/json
+
+### Journey stops — unknown Auftragsnummer -> 404 Not Found
+GET {{host}}/bookings/000000000000/journey-stops
+Accept: application/json
+
+###
