@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": ["@angular/localize"]
+  },
+  "include": [
+    "node_modules/@db-ux/db-theme-icons/build/types/overwrite.d.ts",
+    "src/**/*.ts"
+  ],
+  "exclude": ["src/**/*.spec.ts"]
+}

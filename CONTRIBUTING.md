@@ -1,9 +1,35 @@
 # Contribution guidelines
 
-Thanks for your interest in our project. Contributions are welcome. Feel free to open an issue with questions or reporting ideas and bugs, or open pull requests to contribute code.
+Thanks for your interest. Issues and pull requests are welcome. Be kind.
 
-It's important to us that we have a welcoming and respectful environment for everybody here. Please be kind.
+By submitting a contribution you agree that it falls under the repository's [Apache 2.0](LICENSE) license and that you have the right to submit it.
 
-By submitting a contribution to this repository you agree that you do this under the license of the repository and certify that you have all the rights to do so.
+## Repository layout
 
-<!-- TODO: Describe how to set up a development environment and contribute code -->
+This is a polyglot repo with no root package manager. Each component manages its own dependencies:
+
+- [`request-frontend/`](request-frontend/) — Angular app, pnpm. See [`request-frontend/README.md`](request-frontend/README.md).
+- [`request-backend/`](request-backend/) — NestJS app, pnpm. See [`request-backend/README.md`](request-backend/README.md).
+- [`shared/`](shared/) — TypeScript types shared between frontend and backend, pnpm.
+
+## Development setup
+
+1. Install Node `>=24.16.0` (current LTS) and [pnpm](https://pnpm.io/installation) `>=11.8`.
+2. Add the DB-UX decryption secrets to `request-frontend/.env` (see [`request-frontend/README.md`](request-frontend/README.md#db-theme-decryption)).
+3. Run `pnpm install` in each component you plan to work on.
+
+## Coding conventions
+
+- TypeScript everywhere on the Node side.
+- The frontend follows the [Angular Styleguide](https://angular.dev/style-guide) with `prefer-standalone` components and signal-based state.
+- All package managers are pinned via `packageManager` in each `package.json`. Use `pnpm`, not `npm` or `yarn`.
+
+## Running checks
+
+Inside each component:
+
+```bash
+pnpm lint
+pnpm build
+pnpm test
+```

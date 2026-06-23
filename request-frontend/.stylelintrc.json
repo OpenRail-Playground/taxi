@@ -1,0 +1,21 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "overrides": [
+    {
+      "files": ["**/*.component.ts"],
+      "customSyntax": "postcss-angular"
+    }
+  ],
+  "plugins": [
+    "stylelint-use-logical",
+    "@double-great/stylelint-a11y",
+    "@db-ux/core-stylelint"
+  ],
+  "rules": {
+    "no-empty-source": null,
+    "db-ux/use-spacings": [true],
+    "db-ux/use-border-width": [true],
+    "db-ux/use-border-radius": [true],
+    "db-ux/use-border-color": [true]
+  }
+}

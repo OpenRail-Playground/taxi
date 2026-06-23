@@ -1,0 +1,6 @@
+// DB UX whitelabel + DB theme override.
+// `rollup` variant works with esbuild/Vite which the Angular CLI uses
+// under @angular/build:application.
+@forward '@db-ux/core-components/build/styles/rollup';
+@forward '@db-ux/db-theme/build/styles/rollup';
+@use '@db-ux/core-foundations/build/styles/variables';

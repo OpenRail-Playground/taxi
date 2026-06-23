@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "angular.ng-template",
+    "deque-systems.vscode-axe-linter",
+    "stylelint.vscode-stylelint",
+    "vunguyentuan.vscode-css-variables"
+  ]
+}
