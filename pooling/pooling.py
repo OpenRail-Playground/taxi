@@ -2,83 +2,89 @@ from pooling.types import CustomerJourney, TaxiPoolingStatus
 
 __MAX_PASSENGERS_PER_TAXI__ = 3
 
-def pool_taxi_rides(customer_journeys: list[CustomerJourney],
-                    distance_matrix: list[list[float]], name_mapping: list[str]) -> CustomerJourney:
-    already_checked_destinations = []
-    current_group = 0
-    done = False
-    while True:
-        if done:
+
+def _find_nearest_destination_index(distances: list[float], excluded: set[int]) -> int | None:
+    nearest_index = None
+    nearest_distance = None
+
+    for destination_index, distance in enumerate(distances):
+        if destination_index in excluded:
+            continue
+
+        if nearest_distance is None or distance < nearest_distance:
+            nearest_distance = distance
+            nearest_index = destination_index
+
+    return nearest_index
+
+
+def _get_waiting_customers(customer_journeys: list[CustomerJourney], destination_name: str) -> list[int]:
+    return [
+        index
+        for index, journey in enumerate(customer_journeys)
+        if journey["status"] != TaxiPoolingStatus.SCHEDULED and journey["destination_name"] == destination_name
+    ]
+
+
+def _assign_to_group(customer_journeys: list[CustomerJourney], journey_index: int, group_number: int) -> None:
+    customer_journeys[journey_index]["status"] = TaxiPoolingStatus.SCHEDULED
+    customer_journeys[journey_index]["pool_number"] = group_number
+
+
+def _fill_group_with_nearest_destinations(customer_journeys: list[CustomerJourney], distance_matrix: list[list[float]],
+                                          name_mapping: list[str], anchor_destination_index: int, current_group: int,
+                                          current_members_in_group: int) -> int:
+    excluded_other_destinations = {anchor_destination_index}
+
+    while current_members_in_group < __MAX_PASSENGERS_PER_TAXI__:
+        nearest_other_destination_index = _find_nearest_destination_index(
+            distance_matrix[anchor_destination_index], excluded_other_destinations
+        )
+        if nearest_other_destination_index is None:
             break
+
+        excluded_other_destinations.add(nearest_other_destination_index)
+        other_destination_name = name_mapping[nearest_other_destination_index]
+        waiting_indices = _get_waiting_customers(customer_journeys, other_destination_name)
+
+        for journey_index in waiting_indices:
+            if current_members_in_group == __MAX_PASSENGERS_PER_TAXI__:
+                break
+            _assign_to_group(customer_journeys, journey_index, current_group)
+            current_members_in_group += 1
+
+    return current_members_in_group
+
+
+def pool_taxi_rides(customer_journeys: list[CustomerJourney],
+                    distance_matrix: list[list[float]], name_mapping: list[str]) -> None:
+    already_checked_destinations: set[int] = set()
+    current_group = 0
+    total_destinations = len(distance_matrix)
+
+    while len(already_checked_destinations) < total_destinations:
+        nearest_destination_index = _find_nearest_destination_index(distance_matrix[0], already_checked_destinations)
+        if nearest_destination_index is None:
+            break
+
+        already_checked_destinations.add(nearest_destination_index)
+        destination_name = name_mapping[nearest_destination_index]
+        waiting_customers = _get_waiting_customers(customer_journeys, destination_name)
+
+        if not waiting_customers:
+            continue
+
         current_group += 1
         current_members_in_group = 0
-        smallest_distance = None
 
-        for destination_i in range(0, len(distance_matrix[0])):
-            if len(already_checked_destinations) == len(distance_matrix):
-                done = True
-                break
+        for journey_index in waiting_customers:
+            if current_members_in_group == __MAX_PASSENGERS_PER_TAXI__:
+                current_group += 1
+                current_members_in_group = 0
 
+            _assign_to_group(customer_journeys, journey_index, current_group)
+            current_members_in_group += 1
 
-            if destination_i not in already_checked_destinations and (not smallest_distance or distance_matrix[0][destination_i] < smallest_distance):
-                smallest_distance = distance_matrix[0][destination_i]
-                already_checked_destinations.append(destination_i)
-                smallest_distance_i = destination_i
-            else:
-                continue
-
-
-            passenger_amount_to_destination = sum(1 for journey in customer_journeys if journey["destination_name"] == name_mapping[smallest_distance_i] and journey["status"] != TaxiPoolingStatus.SCHEDULED)
-
-            for journeys_i in range(0, len(customer_journeys)):
-                if customer_journeys[journeys_i]["status"] == TaxiPoolingStatus.SCHEDULED:
-                    continue
-
-                if name_mapping[smallest_distance_i] != customer_journeys[journeys_i]["destination_name"]:
-                    continue
-
-                if current_members_in_group == __MAX_PASSENGERS_PER_TAXI__:
-                    current_group += 1
-                    current_members_in_group = 0
-
-                customer_journeys[journeys_i]["status"] = TaxiPoolingStatus.SCHEDULED
-                customer_journeys[journeys_i]["pool_number"] = current_group
-                current_members_in_group += 1
-                passenger_amount_to_destination -= 1
-
-                if passenger_amount_to_destination == 0 and current_members_in_group == 0:
-                    break
-
-                destinations_without_waiting_customers = []
-                already_checked_other_destinations = [smallest_distance_i]
-                if passenger_amount_to_destination == 0 and current_members_in_group > 0:
-                    while True:
-                        if current_members_in_group == 3:
-                            break
-
-                        smallest_other_distance = None
-                        smallest_other_distance_i = -1
-                        for other_destination_i in range(0, len(distance_matrix[smallest_distance_i])):
-                            if other_destination_i not in already_checked_other_destinations and (smallest_other_distance is None or distance_matrix[smallest_distance_i][other_destination_i] < smallest_other_distance) and other_destination_i not in destinations_without_waiting_customers:
-                                already_checked_other_destinations.append(other_destination_i)
-                                smallest_other_distance = distance_matrix[smallest_distance_i][other_destination_i]
-                                smallest_other_distance_i = other_destination_i
-                            else:
-                                continue
-
-                        if smallest_other_distance is None:
-                            break
-
-                        for journeys_j in range(0, len(customer_journeys)):
-                            if name_mapping[smallest_other_distance_i] != customer_journeys[journeys_j]["destination_name"]:
-                                continue
-
-                            if customer_journeys[journeys_j]["status"] == TaxiPoolingStatus.SCHEDULED:
-                                continue
-
-                            if current_members_in_group == __MAX_PASSENGERS_PER_TAXI__:
-                                break
-                            customer_journeys[journeys_j]["status"] = TaxiPoolingStatus.SCHEDULED
-                            customer_journeys[journeys_j]["pool_number"] = current_group
-                            current_members_in_group += 1
-                            passenger_amount_to_destination -= 1
+        if 0 < current_members_in_group < __MAX_PASSENGERS_PER_TAXI__:
+            _fill_group_with_nearest_destinations(customer_journeys, distance_matrix, name_mapping,
+                                                  nearest_destination_index, current_group, current_members_in_group)
