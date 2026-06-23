@@ -92,3 +92,23 @@ export interface ValidatedBooking {
   destinationStation: string;
   passengerCount: number;
 }
+
+/**
+ * A single stop on a journey, as returned by the RIS::Journeys API.
+ * Stops after the passenger's destination are excluded.
+ */
+export interface JourneyStop {
+  /** EVA station number, e.g. "8000085" */
+  evaNumber: string;
+  /** Human-readable station name, e.g. "Düsseldorf Hbf" */
+  name: string;
+  /** Scheduled departure time as ISO-8601 string, e.g. "2026-05-29T21:29:00+02:00" */
+  scheduledTime: string;
+  /** True when this stop is cancelled (train does not serve it) */
+  cancelled: boolean;
+}
+
+/** Response shape for GET /bookings/:auftragsnummer/journey-stops */
+export interface JourneyStopsResponse {
+  stops: JourneyStop[];
+}

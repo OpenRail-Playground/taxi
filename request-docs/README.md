@@ -95,7 +95,7 @@ taxi/
 | Component | Stack | Port (dev) | Notes |
 | --- | --- | --- | --- |
 | [`request-frontend/`](../request-frontend/) | Angular 21, DB UX, pnpm | `4200` | Hot-reload dev server expected on `4200` |
-| [`request-backend/`](../request-backend/) | NestJS 11 on Express, pnpm | `3000` | Currently exposes only `GET /health` |
+| [`request-backend/`](../request-backend/) | NestJS 11 on Express, pnpm | `3000` | `GET /health`, `POST /bookings/validate`, `GET /bookings/:id/journey-stops` (issue #8) |
 | [`shared/`](../shared/) | TypeScript types, pnpm | — | `HelpRequest`, `CreateHelpRequestDto`, `EligibilityResult` |
 | [`request-docs/`](.) | Markdown | — | arc42 (this file) |
 
@@ -106,6 +106,8 @@ request-backend/src/
 ├── main.ts                bootstrap (NestFactory, CORS, port 3000)
 ├── app.module.ts          root module
 ├── health/                GET /health
+├── bookings/              POST /bookings/validate + GET /bookings/:auftragsnummer/journey-stops
+├── ris/                   RisJourneysClient + RisJourneysModule (DB RIS API integration)
 └── persistence/           generic file-based repository (issue #6)
 ```
 
@@ -116,11 +118,27 @@ _TBD — currently a single app shell using DB UX (`<db-page>`, `<db-header>`, `
 
 ## 6. Runtime View
 
-_TBD — no real end-to-end flows implemented yet. Candidates to document once they exist:_
+### Journey stops flow (issue #8)
 
-- Passenger submits a help request → eligibility check → voucher issued.
-- Backend pools matching help requests → assigns shared taxi.
-- Frontend polls / subscribes for voucher status.
+```
+Passenger (frontend)
+  → POST /bookings/validate { auftragsnummer, lastName }
+  ← 200 { trainNumber, travelDate, destinationStation, passengerCount }
+
+  → GET /bookings/:auftragsnummer/journey-stops
+  ← 200 { stops: [ { evaNumber, name, scheduledTime, cancelled }, ... ] }
+        (stops truncated at passenger's destinationStation, inclusive)
+```
+
+Backend two-step RIS call:
+1. `RIS::Journeys v1 GET /byrelation?number={N}&category={CAT}&date={DATE}` — resolves a `journeyID` from the train number and travel date. Uses historical data, so it works for past dates.
+2. `RIS::Journeys v2 GET /{journeyID}` — fetches all stop events for that journey. Returns inline `cancelled` boolean per stop.
+
+Both calls require `Accept: application/vnd.de.db.ris+json` and separate `DB-Client-ID` / `DB-Api-Key` credential pairs (v1 and v2 use different subscriptions — see `request-backend/.env.example`).
+
+**Hackathon test data:** booking `258376699013`, train `ICE 647`, date `2026-05-29`. Journey has 15 stops with 12 cancelled from Düsseldorf Flughafen onward. The passenger's destination (Düsseldorf Hbf) is the 2nd stop and is not cancelled.
+
+_Other runtime flows (eligibility, voucher issuance, pooling) are TBD._
 
 ---
 
@@ -146,8 +164,18 @@ Backend persistence goes through a generic `FileRepository<T extends { id: strin
 ### Design system
 Frontend uses the [DB UX](https://www.npmjs.com/org/db-ux) public packages. Brand assets ship encrypted in the package and are decrypted at install time using credentials in `request-frontend/.env` (`ASSET_PASSWORD`, `ASSET_INIT_VECTOR`). Without these, the brand logo and icons won't render — the rest of the app still works.
 
-### Other concerns
-_TBD — security, logging, error handling, i18n, accessibility beyond DB UX defaults._
+### RIS API integration
+The backend integrates with two flavours of the DB **RIS::Journeys** API to retrieve live journey stop data:
+
+- **v1** (`https://apis.deutschebahn.com/db/apis/ris-journeys/v1`) — used for `/byrelation` lookups. Contains historical data, so it reliably resolves train numbers from past dates (required for hackathon demo data).
+- **v2** (`https://apis.deutschebahn.com/db/apis/ris-journeys/v2`) — used for `/{journeyID}` detail. Returns all stop events with real-time cancellation status.
+
+Both APIs require `Accept: application/vnd.de.db.ris+json` (not standard `application/json`) and a `DB-Client-ID` + `DB-Api-Key` header pair. v1 and v2 use **separate credential subscriptions** — four env vars total (`RIS_V1_CLIENT_ID`, `RIS_V1_API_KEY`, `RIS_V2_CLIENT_ID`, `RIS_V2_API_KEY`). See `request-backend/.env.example`.
+
+Credentials are loaded from the environment at runtime — never committed. The `RisJourneysClient` service (in `request-backend/src/ris/`) wraps both calls behind typed methods.
+
+### API keys and secrets
+All secrets (RIS credentials, booking data path) are stored in `request-backend/.env` (gitignored). The committed `request-backend/.env.example` documents every required variable with empty values. Never commit `.env` or any file containing real credentials.
 
 ---
 
@@ -161,6 +189,12 @@ Lightweight ADR list. Add a new row when a decision is load-bearing.
 | 2 | DB UX design system over a custom stack | accepted | DB-branded UI out of the box, accessibility built in. |
 | 3 | File-based JSON persistence for the hackathon | accepted | No DB ops cost; swap out behind the `FileRepository` interface later. |
 | 4 | Server-generated UUID v4 ids for persisted entities | accepted | Removes a whole class of id-validation bugs from consumers. |
+| 5 | RIS v1 for journey lookup, v2 for stop detail | accepted | v1 contains historical data needed for demo date (2026-05-29); v2 has the richer per-stop cancellation model. |
+| 6 | Separate RIS credential pairs per API version | accepted | v1 and v2 are distinct marketplace subscriptions with independent rate limits. |
+| 7 | `node:fetch` (Node 24 built-in) as HTTP client | accepted | Zero new dependencies; Node 24 exposes fetch globally and `@types/node@24` covers the types. |
+| 8 | Stateless journey-stops endpoint | accepted | No session management cost; client already holds the `auftragsnummer` from the validate step. |
+| 9 | Destination truncation inclusive, case-insensitive | accepted | Passenger's destination station is the last meaningful stop; case-insensitive trim handles data inconsistencies between booking Excel and RIS name strings. |
+| 10 | Cancelled stops returned in list, not filtered out | accepted | Frontend needs to show which stops are affected to justify the taxi offer. |
 
 ---
 
@@ -178,6 +212,9 @@ _TBD. Known starting points to capture as the prototype grows:_
 - No taxi-provider integrations yet — pooling/booking is theoretical.
 - File-based persistence is not crash-durable (no `fsync`) and assumes a single backend instance.
 - DB UX asset decryption depends on Marketingportal credentials living in `.env` — onboarding cost for new contributors.
+- RIS API dependency: journey-stops endpoint will fail gracefully (502) when RIS is unavailable, but there is no fallback data source.
+- trainNumber parsing assumes "CATEGORY NUMBER" format with a space (e.g. "ICE 619"). Non-standard formats (e.g. "S1", "RE 1a") are rejected with 422.
+- v1 journey disambiguation: when multiple journeys match the same category+number+date (e.g. split runs), the first match is used. A warning is logged but no smarter selection is implemented.
 
 ---
 
@@ -190,3 +227,8 @@ _TBD. Known starting points to capture as the prototype grows:_
 | Voucher | A digital token entitling the passenger to a taxi ride at DB's expense. |
 | Pooling | Combining multiple help requests with compatible routes into a shared taxi ride. |
 | DB UX | DB's public design system, published under the `@db-ux/*` npm scope. |
+| Betriebspunkt | An operational stop point on a railway journey (German: operating point). Used in RIS API responses. |
+| RIS | Rail Information System — DB's internal real-time train information platform. Exposed via `RIS::Journeys` API. |
+| EVA number | A numeric station identifier used in the German rail network (e.g. `8000085` = Düsseldorf Hbf). |
+| Auftragsnummer | DB booking/order number used to look up a passenger's ticket (12-digit numeric string). |
+| Journey ID | Unique RIS identifier for a specific train run on a specific date, returned by `RIS::Journeys v1`. |
