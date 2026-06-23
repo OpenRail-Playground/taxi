@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.page {
+  max-inline-size: 30rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-md);
+}
+
+.page-head {
+  margin-block-start: var(--db-spacing-fixed-lg);
+
+  h1 {
+    margin: 0 0 var(--db-spacing-fixed-sm);
+  }
+
+  p {
+    margin: 0;
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  }
+}
+
+.info-link {
+  display: block;
+  margin-block-start: var(--db-spacing-fixed-xs);
+}
+
+.scene {
+  margin-block-start: var(--db-spacing-fixed-sm);
+}
+
+.secure {
+  align-self: center;
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+}

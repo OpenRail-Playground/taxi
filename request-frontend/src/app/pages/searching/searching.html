@@ -1,0 +1,58 @@
+<db-section spacing="small">
+  <div class="page">
+    <header class="page-head">
+      <h1>We are looking<br />for a taxi for you.</h1>
+      <p class="searching">
+        Searching nearby drivers
+        <span class="dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+      </p>
+    </header>
+
+    <db-notification
+      variant="standalone"
+      icon="information_circle"
+      class="info">
+      Your booking is confirmed. Please stay near the exit — we'll notify you
+      when a driver is assigned.
+      <db-button
+        variant="ghost"
+        iconTrailing="arrow_right"
+        class="info-link"
+        (click)="viewDetails()">
+        View travel details
+      </db-button>
+    </db-notification>
+
+    <db-card spacing="medium" class="details">
+      <dl class="rows">
+        <div class="row">
+          <dt><span class="row-icon hash">#</span> Booking no.</dt>
+          <dd>{{ taxiBooking()?.bookingNumber }}</dd>
+        </div>
+        <div class="row">
+          <dt><db-icon icon="location_pin" class="row-icon" /> Pickup point</dt>
+          <dd>{{ taxiBooking()?.pickupPoint }}</dd>
+        </div>
+        <div class="row">
+          <dt><db-icon icon="clock" class="row-icon" /> Est. wait</dt>
+          <dd class="wait">~{{ taxiBooking()?.estWaitMinutes }} min</dd>
+        </div>
+        <div class="row">
+          <dt><db-icon icon="persons" class="row-icon" /> Passengers</dt>
+          <dd>
+            {{ passengers().adults }}
+            {{ passengers().adults === 1 ? 'adult' : 'adults' }}
+          </dd>
+        </div>
+      </dl>
+    </db-card>
+
+    <db-button variant="outlined" width="full" iconTrailing="chat" class="help">
+      I need help
+    </db-button>
+
+    <app-journey-scene class="scene" />
+  </div>
+</db-section>

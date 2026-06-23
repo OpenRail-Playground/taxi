@@ -1,0 +1,40 @@
+<db-section spacing="small">
+  <div class="page">
+    <header class="page-head">
+      <h1>We are sorry your journey has been disrupted.</h1>
+      <p>
+        We understand that delays and cancellations can be frustrating. We will
+        guide you through a short process to check whether you are eligible for
+        a taxi or another replacement service.
+      </p>
+    </header>
+
+    <db-notification
+      variant="standalone"
+      icon="information_circle"
+      class="info">
+      Checking your eligibility only takes a few minutes.
+      <db-button variant="ghost" iconTrailing="arrow_right" class="info-link">
+        How am I eligible for a replacement by Taxi?
+      </db-button>
+    </db-notification>
+
+    <db-button
+      variant="brand"
+      width="full"
+      iconTrailing="arrow_right"
+      (click)="start()">
+      Start Request
+    </db-button>
+
+    <app-journey-scene class="scene" />
+
+    <db-infotext
+      icon="lock_closed"
+      semantic="neutral"
+      size="small"
+      class="secure">
+      Secure connection
+    </db-infotext>
+  </div>
+</db-section>

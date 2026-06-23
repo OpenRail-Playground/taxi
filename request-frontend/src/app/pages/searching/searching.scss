@@ -1,0 +1,118 @@
+:host {
+  display: block;
+}
+
+.page {
+  max-inline-size: 30rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-md);
+}
+
+.page-head {
+  h1 {
+    margin: 0;
+  }
+}
+
+.searching {
+  display: flex;
+  align-items: center;
+  gap: var(--db-spacing-fixed-2xs);
+  margin-block: var(--db-spacing-fixed-xs) 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+
+  span {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    margin-inline-start: var(--db-spacing-fixed-3xs);
+    border-radius: var(--db-border-radius-full);
+    background: var(--db-critical-origin-default);
+    animation: dot-pulse 1.2s infinite ease-in-out;
+  }
+
+  span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+}
+
+@keyframes dot-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.info-link {
+  display: block;
+  margin-block-start: var(--db-spacing-fixed-xs);
+}
+
+/* booking details */
+.rows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--db-spacing-fixed-md);
+  padding-block: var(--db-spacing-fixed-sm);
+
+  & + & {
+    border-block-start: var(--db-border-width-3xs) solid
+      var(--db-adaptive-on-bg-basic-emphasis-50-default);
+  }
+}
+
+.row dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--db-spacing-fixed-xs);
+  color: var(--db-adaptive-on-bg-basic-emphasis-90-default);
+}
+
+.row dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: end;
+}
+
+.row-icon {
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+}
+
+.hash {
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.wait {
+  color: var(--db-critical-on-bg-basic-emphasis-100-default);
+}
+
+/* decorative scene */
+.scene {
+  margin-block-start: var(--db-spacing-fixed-xs);
+}

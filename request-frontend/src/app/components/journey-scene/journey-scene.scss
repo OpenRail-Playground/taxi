@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+.scene {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  border-radius: var(--db-border-radius-md);
+}
