@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import { PersistenceModule } from './persistence.module';
 import { fileRepositoryToken } from './file-repository';
 import { JsonFileRepository } from './json-file-repository';
+import { RedisRepository } from './redis-repository';
 
 describe('PersistenceModule.forFeature', () => {
   let tmpDir: string;
@@ -80,5 +81,51 @@ describe('PersistenceModule.forFeature', () => {
     const betaRepo = module.get(fileRepositoryToken('beta'));
     expect(alphaRepo).not.toBe(betaRepo);
     await module.close();
+  });
+});
+
+describe('PersistenceModule.forFeature (PERSISTENCE_BACKEND=redis)', () => {
+  const previousBackend = process.env['PERSISTENCE_BACKEND'];
+  const previousUrl = process.env['UPSTASH_REDIS_REST_URL'];
+  const previousToken = process.env['UPSTASH_REDIS_REST_TOKEN'];
+
+  beforeAll(() => {
+    process.env['PERSISTENCE_BACKEND'] = 'redis';
+    process.env['UPSTASH_REDIS_REST_URL'] = 'https://example.upstash.io';
+    process.env['UPSTASH_REDIS_REST_TOKEN'] = 'fake-token';
+  });
+
+  afterAll(() => {
+    if (previousBackend === undefined) delete process.env['PERSISTENCE_BACKEND'];
+    else process.env['PERSISTENCE_BACKEND'] = previousBackend;
+    if (previousUrl === undefined) delete process.env['UPSTASH_REDIS_REST_URL'];
+    else process.env['UPSTASH_REDIS_REST_URL'] = previousUrl;
+    if (previousToken === undefined) delete process.env['UPSTASH_REDIS_REST_TOKEN'];
+    else process.env['UPSTASH_REDIS_REST_TOKEN'] = previousToken;
+  });
+
+  it('resolves the token to a RedisRepository', async () => {
+    const module = await Test.createTestingModule({
+      imports: [PersistenceModule.forFeature({ entity: 'demo-redis' })],
+    }).compile();
+    const repo = module.get(fileRepositoryToken('demo-redis'));
+    expect(repo).toBeInstanceOf(RedisRepository);
+    await module.close();
+  });
+});
+
+describe('PersistenceModule.forFeature (invalid backend)', () => {
+  const previousBackend = process.env['PERSISTENCE_BACKEND'];
+
+  afterEach(() => {
+    if (previousBackend === undefined) delete process.env['PERSISTENCE_BACKEND'];
+    else process.env['PERSISTENCE_BACKEND'] = previousBackend;
+  });
+
+  it('throws on unknown PERSISTENCE_BACKEND value', () => {
+    process.env['PERSISTENCE_BACKEND'] = 'mysql';
+    expect(() => PersistenceModule.forFeature({ entity: 'x' })).toThrow(
+      /Unsupported PERSISTENCE_BACKEND=mysql/,
+    );
   });
 });

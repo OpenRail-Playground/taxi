@@ -22,6 +22,7 @@
     "@nestjs/core": "11.1.7",
     "@nestjs/platform-express": "11.1.7",
     "@taxi/shared": "link:../shared",
+    "@upstash/redis": "^1.38.0",
     "exceljs": "^4.4.0",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2"
