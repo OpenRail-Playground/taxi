@@ -25,10 +25,10 @@ import { PersistenceModule } from './persistence/persistence.module';
 
 // In any NestJS module (not AppModule itself in this release):
 @Module({
-  imports: [PersistenceModule.forFeature({ entity: 'help-request' })],
+  imports: [PersistenceModule.forFeature({ entity: 'widget' })],
   // ...
 })
-export class HelpRequestModule {}
+export class WidgetModule {}
 ```
 
 Inject via the token:
@@ -37,9 +37,12 @@ Inject via the token:
 import { Inject } from '@nestjs/common';
 import { fileRepositoryToken, FileRepository } from './persistence/file-repository';
 
+// Widget is a placeholder — replace with your actual entity type
+type Widget = { id: string; name: string };
+
 constructor(
-  @Inject(fileRepositoryToken('help-request'))
-  private readonly repo: FileRepository<HelpRequest>,
+  @Inject(fileRepositoryToken('widget'))
+  private readonly repo: FileRepository<Widget>,
 ) {}
 ```
 
