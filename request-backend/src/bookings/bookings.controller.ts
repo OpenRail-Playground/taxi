@@ -43,6 +43,7 @@ export class BookingsController {
       trainNumber: record.trainNumber,
       travelDate: record.travelDate,
       destinationStation: record.destinationStation,
+      passengerCount: record.passengerCount,
     };
   }
 }

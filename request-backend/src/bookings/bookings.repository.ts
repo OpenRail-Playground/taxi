@@ -16,6 +16,7 @@ const DEFAULT_DATA_PATH = path.resolve(
 const SHEET_NAME = 'Result';
 
 const COL_AUFTRAGSNUMMER = 1;
+const COL_ANZAHL_REISENDE = 2;
 const COL_ZIELORT = 5;
 const COL_ZUGNUMMER = 7;
 const COL_REISETAG = 8;
@@ -56,6 +57,9 @@ export class BookingsRepository implements OnModuleInit {
         row.getCell(COL_ZIELORT).value ?? '',
       ).trim();
       const travelDate = normalizeDate(row.getCell(COL_REISETAG).value);
+      const passengerCount = normalizePassengerCount(
+        row.getCell(COL_ANZAHL_REISENDE).value,
+      );
 
       if (!auftragsnummer || !trainNumber || !destinationStation || !travelDate) {
         return;
@@ -66,6 +70,7 @@ export class BookingsRepository implements OnModuleInit {
         trainNumber,
         travelDate,
         destinationStation,
+        passengerCount,
       });
       loaded += 1;
     });
@@ -106,4 +111,12 @@ function normalizeDate(value: unknown): string {
     return value.trim();
   }
   return '';
+}
+
+function normalizePassengerCount(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.max(1, Math.round(value));
+  }
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : 1;
 }

@@ -8,4 +8,5 @@ export interface BookingRecord {
   trainNumber: string;
   travelDate: string;
   destinationStation: string;
+  passengerCount: number;
 }

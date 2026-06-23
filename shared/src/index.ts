@@ -90,4 +90,5 @@ export interface ValidatedBooking {
   travelDate: string;
   /** Station the passenger is travelling to. */
   destinationStation: string;
+  passengerCount: number;
 }
