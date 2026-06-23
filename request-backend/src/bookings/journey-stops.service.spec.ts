@@ -1,4 +1,10 @@
+import {
+  BadGatewayException,
+  GatewayTimeoutException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
+import { UpstreamHttpError, UpstreamTimeoutError } from '../ris/upstream-errors';
 import { RisJourneysClient } from '../ris/ris-journeys.client';
 import { JourneyStopsService } from './journey-stops.service';
 
@@ -160,14 +166,69 @@ describe('JourneyStopsService', () => {
       expect(stops[0].cancelled).toBe(true);
     });
 
-    it('propagates errors thrown by RisJourneysClient.findJourneyId', async () => {
+    it('maps NO_JOURNEY_FOUND sentinel → NotFoundException', async () => {
       ris.findJourneyId.mockRejectedValue(
         new Error('NO_JOURNEY_FOUND:ICE 619 on 2026-05-29'),
       );
 
       await expect(
         service.getStops('ICE 619', '2026-05-29', 'Hamburg Hbf'),
-      ).rejects.toThrow(/NO_JOURNEY_FOUND/);
+      ).rejects.toMatchObject({ status: 404, name: 'NotFoundException' });
+
+      try {
+        await service.getStops('ICE 619', '2026-05-29', 'Hamburg Hbf');
+      } catch (err) {
+        const ex = err as NotFoundException;
+        expect(ex.message).toContain('ICE 619');
+        expect(ex.message).toContain('2026-05-29');
+      }
+    });
+
+    it('maps UpstreamHttpError → BadGatewayException with cause', async () => {
+      const upstream = new UpstreamHttpError('https://x', 500, 'oops');
+      ris.findJourneyId.mockRejectedValue(upstream);
+
+      await expect(
+        service.getStops('ICE 619', '2026-05-29', 'Köln Hbf'),
+      ).rejects.toMatchObject({ status: 502, name: 'BadGatewayException' });
+
+      try {
+        await service.getStops('ICE 619', '2026-05-29', 'Köln Hbf');
+      } catch (err) {
+        const ex = err as BadGatewayException & { cause: unknown };
+        expect(ex.cause).toBeInstanceOf(UpstreamHttpError);
+        expect((ex.cause as UpstreamHttpError).status).toBe(500);
+      }
+    });
+
+    it('maps UpstreamTimeoutError → GatewayTimeoutException with cause', async () => {
+      const upstream = new UpstreamTimeoutError('https://x', 8000);
+      ris.findJourneyId.mockRejectedValue(upstream);
+
+      await expect(
+        service.getStops('ICE 619', '2026-05-29', 'Köln Hbf'),
+      ).rejects.toMatchObject({ status: 504, name: 'GatewayTimeoutException' });
+
+      try {
+        await service.getStops('ICE 619', '2026-05-29', 'Köln Hbf');
+      } catch (err) {
+        const ex = err as GatewayTimeoutException & { cause: unknown };
+        expect(ex.cause).toBeInstanceOf(UpstreamTimeoutError);
+        expect((ex.cause as UpstreamTimeoutError).timeoutMs).toBe(8000);
+      }
+    });
+
+    it('parseTrainNumber unparseable propagates bare Error before try/catch', async () => {
+      await expect(
+        service.getStops('???', '2026-05-29', 'Köln Hbf'),
+      ).rejects.toThrow(/UNPARSEABLE_TRAIN_NUMBER/);
+
+      try {
+        await service.getStops('???', '2026-05-29', 'Köln Hbf');
+      } catch (err) {
+        expect(err).toBeInstanceOf(Error);
+        expect((err as Error & { status?: number }).status).toBeUndefined();
+      }
     });
   });
 });
