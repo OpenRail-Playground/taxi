@@ -10,6 +10,14 @@ This project was initiated during [Hack4Rail 2026](https://hack4rail.org/), a jo
 
 See issue [#1](https://github.com/OpenRail-Playground/taxi/issues/1) for scope.
 
+## Live
+
+| Surface | URL | Notes |
+|---|---|---|
+| Frontend | https://taxi-frontend-loyq.onrender.com | Render Static Site, always-on |
+| Backend  | https://taxi-backend-iq95.onrender.com  | Render Web Service, free tier — sleeps after 15 min idle (cold start ~30–60 s) |
+| Health   | https://taxi-backend-iq95.onrender.com/health | Use this to wake the backend before a demo |
+
 ## Layout
 
 The repo holds three top-level packages. There is intentionally **no root package manager**: each component manages its own dependencies because the repo will host multiple stacks (Node, Python, ...).
