@@ -1,33 +1,29 @@
 import requests
 import pandas as pd
 
-from pooling_types import CustomerJourney
+from pooling.types import CustomerJourney
 
 ORS_MATRIX_URL = "https://api.openrouteservice.org/v2/matrix/driving-car"
 
 
-def get_distance_matrix_and_destination_mapping(
-    source_lon: float,
-    source_lat: float,
-    customer_journeys: list[CustomerJourney],
-    api_token: str,
-) -> list[list[float]]:
-    destination_coordinates = []
-    destination_names = ["Bielefeld"]
-    destination_name_set = {"Bielefeld"}
+def get_distance_matrix_and_destination_mapping(source_lon: float, source_lat: float,
+                                                customer_journeys: list[CustomerJourney],
+                                                api_token: str) -> pd.DataFrame:
+    destination_coordinates_by_name: dict[str, list[float]] = {}
     for journey in customer_journeys:
-        coordinates = (journey["destination_lon"], journey["destination_lat"])
-        if journey["destination_name"] in destination_name_set:
+        destination_name = journey["destination_name"]
+        if destination_name in destination_coordinates_by_name:
             continue
 
-        destination_coordinates.append(coordinates)
-        destination_names.append(journey["destination_name"])
-        destination_name_set.add(journey["destination_name"])
+        destination_coordinates_by_name[destination_name] = [
+            journey["destination_lon"],
+            journey["destination_lat"],
+        ]
 
-    locations = [[source_lon, source_lat]] + [
-        [destination_lon, destination_lat]
-        for destination_lon, destination_lat in destination_coordinates
-    ]
+    destination_names = list(destination_coordinates_by_name.keys())
+    destination_coordinates = [destination_coordinates_by_name[name] for name in destination_names]
+
+    locations = [[source_lon, source_lat], *destination_coordinates]
 
     headers = {
         "Authorization": f"Bearer {api_token}",
@@ -51,7 +47,5 @@ def get_distance_matrix_and_destination_mapping(
         if row_index >= len(destination_names):
             break
         destination_names_df.loc[destination_names[row_index]] = row_values
-
-    # print(destination_names_df)
 
     return destination_names_df
