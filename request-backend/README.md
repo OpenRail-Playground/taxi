@@ -41,7 +41,7 @@ curl -s -X POST http://localhost:3000/bookings/validate \
 
 Behaviour:
 
-- `200 OK` with `{ trainNumber, travelDate, destinationStation }` when the booking number exists in the local data source. The last name is accepted but not validated yet (forward-compat with the future DB backend integration).
+- `200 OK` with `{ trainNumber, travelDate, destinationStation, passengerCount }` when the booking number exists in the local data source. The last name is accepted but not validated yet (forward-compat with the future DB backend integration).
 - `404 Not Found` with the exact wording from issue [#5](https://github.com/OpenRail-Playground/taxi/issues/5) when the booking number is unknown.
 - `400 Bad Request` when `auftragsnummer` or `lastName` is missing/empty.
 
