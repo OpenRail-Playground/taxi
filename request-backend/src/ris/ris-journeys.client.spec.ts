@@ -1,4 +1,6 @@
+import { Logger } from '@nestjs/common';
 import { RisJourneysClient } from './ris-journeys.client';
+import { UpstreamHttpError, UpstreamTimeoutError } from './upstream-errors';
 
 describe('RisJourneysClient', () => {
   let client: RisJourneysClient;
@@ -9,6 +11,7 @@ describe('RisJourneysClient', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   describe('findJourneyId', () => {
@@ -45,18 +48,6 @@ describe('RisJourneysClient', () => {
         /^NO_JOURNEY_FOUND:/,
       );
     });
-
-    it('throws an error when v1 returns non-2xx HTTP status', async () => {
-      jest.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response('Internal Server Error', {
-          status: 500,
-        }),
-      );
-
-      await expect(client.findJourneyId('ICE', 647, '2026-05-29')).rejects.toThrow(
-        /RIS v1 returned HTTP 500/,
-      );
-    });
   });
 
   describe('getJourneyEvents', () => {
@@ -89,16 +80,160 @@ describe('RisJourneysClient', () => {
       expect(events[0].type).toBe('DEPARTURE');
       expect(events[0].stopPlace.evaNumber).toBe('8000085');
     });
+  });
 
-    it('throws an error when v2 returns non-2xx HTTP status', async () => {
+  describe('upstream error handling', () => {
+    it('findJourneyId: throws UpstreamHttpError and logs error on 5xx', async () => {
       jest.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response('Not Found', {
-          status: 404,
-        }),
+        new Response('upstream go boom', { status: 500 }),
+      );
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+
+      await expect(client.findJourneyId('ICE', 619, '2026-05-29')).rejects.toBeInstanceOf(
+        UpstreamHttpError,
       );
 
-      await expect(client.getJourneyEvents('journey-missing')).rejects.toThrow(
-        /RIS v2 returned HTTP 404/,
+      // Re-trigger to inspect properties; reset spy state in between.
+      errorSpy.mockClear();
+      jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('upstream go boom', { status: 500 }),
+      );
+      let caught: unknown;
+      try {
+        await client.findJourneyId('ICE', 619, '2026-05-29');
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(UpstreamHttpError);
+      const err = caught as UpstreamHttpError;
+      expect(err.status).toBe(500);
+      expect(err.bodyExcerpt).toContain('upstream go boom');
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 500, label: 'ris-v1' }),
+      );
+    });
+
+    it('findJourneyId: throws UpstreamHttpError and logs warn (not error) on 401', async () => {
+      jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('Unauthorized', { status: 401 }),
+      );
+      const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+
+      let caught: unknown;
+      try {
+        await client.findJourneyId('ICE', 619, '2026-05-29');
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(UpstreamHttpError);
+      const err = caught as UpstreamHttpError;
+      expect(err.status).toBe(401);
+      expect(err.bodyExcerpt).toBe('Unauthorized');
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 401, label: 'ris-v1' }),
+      );
+      expect(errorSpy).not.toHaveBeenCalled();
+    });
+
+    it('findJourneyId: throws UpstreamTimeoutError when fetch aborts after 8s', async () => {
+      jest.useFakeTimers();
+      jest.spyOn(globalThis, 'fetch').mockImplementation(
+        ((_url: string | URL | Request, init?: RequestInit) =>
+          new Promise((_, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+            });
+          })) as typeof fetch,
+      );
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+
+      const promise = client.findJourneyId('ICE', 619, '2026-05-29');
+      jest.advanceTimersByTime(8001);
+
+      let caught: unknown;
+      try {
+        await promise;
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(UpstreamTimeoutError);
+      const err = caught as UpstreamTimeoutError;
+      expect(err.timeoutMs).toBe(8000);
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ msg: 'Upstream timeout', label: 'ris-v1', timeoutMs: 8000 }),
+      );
+    });
+
+    it('getJourneyEvents: throws UpstreamHttpError and logs error on 503', async () => {
+      jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('service unavailable', { status: 503 }),
+      );
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+
+      let caught: unknown;
+      try {
+        await client.getJourneyEvents('journey-abc-123');
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(UpstreamHttpError);
+      const err = caught as UpstreamHttpError;
+      expect(err.status).toBe(503);
+      expect(err.bodyExcerpt).toContain('service unavailable');
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 503, label: 'ris-v2' }),
+      );
+    });
+
+    it('getJourneyEvents: throws UpstreamHttpError and logs warn (not error) on 404', async () => {
+      jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('not found', { status: 404 }),
+      );
+      const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => {});
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+
+      let caught: unknown;
+      try {
+        await client.getJourneyEvents('journey-missing');
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(UpstreamHttpError);
+      const err = caught as UpstreamHttpError;
+      expect(err.status).toBe(404);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 404, label: 'ris-v2' }),
+      );
+      expect(errorSpy).not.toHaveBeenCalled();
+    });
+
+    it('getJourneyEvents: throws UpstreamTimeoutError when fetch aborts after 8s', async () => {
+      jest.useFakeTimers();
+      jest.spyOn(globalThis, 'fetch').mockImplementation(
+        ((_url: string | URL | Request, init?: RequestInit) =>
+          new Promise((_, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+            });
+          })) as typeof fetch,
+      );
+      const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+
+      const promise = client.getJourneyEvents('journey-abc-123');
+      jest.advanceTimersByTime(8001);
+
+      let caught: unknown;
+      try {
+        await promise;
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(UpstreamTimeoutError);
+      const err = caught as UpstreamTimeoutError;
+      expect(err.timeoutMs).toBe(8000);
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ msg: 'Upstream timeout', label: 'ris-v2', timeoutMs: 8000 }),
       );
     });
   });

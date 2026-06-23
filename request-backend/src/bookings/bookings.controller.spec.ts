@@ -1,7 +1,7 @@
 import {
   BadGatewayException,
+  GatewayTimeoutException,
   NotFoundException,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import { Test, type TestingModule } from '@nestjs/testing';
 
@@ -37,21 +37,26 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
     controller = module.get(BookingsController);
   });
 
-  it('returns 200 with { stops } for a known booking', async () => {
+  it('returns 200 with the JourneyStopsResponse for a known booking', async () => {
     bookings.findByAuftragsnummer.mockReturnValue(booking);
-    const stops = [
-      {
+    const response = {
+      origin: {
         evaNumber: '1',
         name: 'Köln Hbf',
         scheduledTime: '2026-05-29T20:00:00+02:00',
-        cancelled: false,
       },
-    ];
-    journeyStops.getStops.mockResolvedValue(stops);
+      destination: {
+        evaNumber: '2',
+        name: 'Düsseldorf Hbf',
+        scheduledTime: '2026-05-29T20:30:00+02:00',
+      },
+      strandedAt: null,
+    };
+    journeyStops.getStops.mockResolvedValue(response);
 
     const result = await controller.getJourneyStops('258376672881');
 
-    expect(result).toEqual({ stops });
+    expect(result).toEqual(response);
     expect(bookings.findByAuftragsnummer).toHaveBeenCalledWith('258376672881');
     expect(journeyStops.getStops).toHaveBeenCalledWith(
       booking.trainNumber,
@@ -72,23 +77,21 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
     expect(journeyStops.getStops).not.toHaveBeenCalled();
   });
 
-  it('throws UnprocessableEntityException (422) on UNPARSEABLE_TRAIN_NUMBER', async () => {
+  it('rejects with raw Error on UNPARSEABLE_TRAIN_NUMBER (controller passes through)', async () => {
     bookings.findByAuftragsnummer.mockReturnValue(booking);
     journeyStops.getStops.mockRejectedValue(
       new Error('UNPARSEABLE_TRAIN_NUMBER:ICE'),
     );
 
-    const promise = controller.getJourneyStops('258376672881');
-    await expect(promise).rejects.toBeInstanceOf(UnprocessableEntityException);
     await expect(
       controller.getJourneyStops('258376672881'),
-    ).rejects.toMatchObject({ status: 422 });
+    ).rejects.toThrow(/UNPARSEABLE_TRAIN_NUMBER/);
   });
 
-  it('throws NotFoundException (404) on NO_JOURNEY_FOUND', async () => {
+  it('throws NotFoundException (404) on NO_JOURNEY_FOUND (service throws Nest exception)', async () => {
     bookings.findByAuftragsnummer.mockReturnValue(booking);
     journeyStops.getStops.mockRejectedValue(
-      new Error('NO_JOURNEY_FOUND:ICE 619'),
+      new NotFoundException('No journey found for ICE 619 on 2026-05-29.'),
     );
 
     await expect(
@@ -99,15 +102,35 @@ describe('BookingsController (GET /:auftragsnummer/journey-stops)', () => {
     ).rejects.toMatchObject({ status: 404 });
   });
 
-  it('throws BadGatewayException (502) on any other error', async () => {
+  it('throws BadGatewayException (502) with cause preserved on RIS error', async () => {
     bookings.findByAuftragsnummer.mockReturnValue(booking);
-    journeyStops.getStops.mockRejectedValue(new Error('network timeout'));
+    journeyStops.getStops.mockRejectedValue(
+      new BadGatewayException('RIS API unavailable. Try again later.', {
+        cause: new Error('upstream-timeout'),
+      }),
+    );
 
-    await expect(
-      controller.getJourneyStops('258376672881'),
-    ).rejects.toBeInstanceOf(BadGatewayException);
-    await expect(
-      controller.getJourneyStops('258376672881'),
-    ).rejects.toMatchObject({ status: 502 });
+    const promise = controller.getJourneyStops('258376672881');
+    await expect(promise).rejects.toBeInstanceOf(BadGatewayException);
+    const caught = await promise.catch((e) => e);
+    expect(caught).toMatchObject({ status: 502 });
+    expect(caught.cause instanceof Error).toBe(true);
+    expect((caught.cause as Error).message).toBe('upstream-timeout');
+  });
+
+  it('throws GatewayTimeoutException (504) with cause preserved on RIS timeout', async () => {
+    bookings.findByAuftragsnummer.mockReturnValue(booking);
+    journeyStops.getStops.mockRejectedValue(
+      new GatewayTimeoutException('RIS API timed out. Try again later.', {
+        cause: new Error('aborted'),
+      }),
+    );
+
+    const promise = controller.getJourneyStops('258376672881');
+    await expect(promise).rejects.toBeInstanceOf(GatewayTimeoutException);
+    const caught = await promise.catch((e) => e);
+    expect(caught).toMatchObject({ status: 504 });
+    expect(caught.cause instanceof Error).toBe(true);
+    expect((caught.cause as Error).message).toBe('aborted');
   });
 });

@@ -31,11 +31,10 @@ export class Journey {
     if (orderId) {
       this.loadingStops.set(true);
       this.#api.getJourneyStops(orderId).subscribe({
-        next: stops => {
-          this.#store.applyJourneyStops(stops);
+        next: response => {
+          this.#store.applyJourneyStops(response);
           this.loadingStops.set(false);
         },
-        // Fall back to the already-loaded journey if RIS is unavailable.
         error: () => this.loadingStops.set(false),
       });
     }

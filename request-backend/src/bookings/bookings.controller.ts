@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   Body,
   Controller,
@@ -8,7 +7,6 @@ import {
   NotFoundException,
   Param,
   Post,
-  UnprocessableEntityException,
 } from '@nestjs/common';
 import type { JourneyStopsResponse } from '@taxi/shared';
 
@@ -64,26 +62,10 @@ export class BookingsController {
     if (!record) {
       throw new NotFoundException(`Booking ${auftragsnummer} not found.`);
     }
-    try {
-      const stops = await this.journeyStops.getStops(
-        record.trainNumber,
-        record.travelDate,
-        record.destinationStation,
-      );
-      return { stops };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      if (msg.startsWith('UNPARSEABLE_TRAIN_NUMBER:')) {
-        throw new UnprocessableEntityException(
-          `Unable to parse train number: ${record.trainNumber}`,
-        );
-      }
-      if (msg.startsWith('NO_JOURNEY_FOUND:')) {
-        throw new NotFoundException(
-          `No journey found for ${record.trainNumber} on ${record.travelDate}.`,
-        );
-      }
-      throw new BadGatewayException('RIS API unavailable. Try again later.');
-    }
+    return this.journeyStops.getStops(
+      record.trainNumber,
+      record.travelDate,
+      record.destinationStation,
+    );
   }
 }
