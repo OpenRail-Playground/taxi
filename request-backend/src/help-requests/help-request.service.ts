@@ -26,7 +26,7 @@ export class HelpRequestService {
   ) {}
 
   async create(input: CreateHelpRequestDto): Promise<HelpRequest> {
-    this.verifier.verify(input);
+    await this.verifier.verify(input);
 
     const draft: Omit<HelpRequest, 'id'> = {
       ...input,

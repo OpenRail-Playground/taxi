@@ -1,0 +1,66 @@
+services:
+  # ---------------------------------------------------------------------
+  # request-backend
+  # NestJS service. Free Render Web Service:
+  #   - 512 MB RAM, 0.1 CPU
+  #   - sleeps after 15 min idle (cold start ~30-60s)
+  #   - filesystem is ephemeral - DO NOT use PERSISTENCE_BACKEND=json here
+  # All state lives in Upstash Redis (help-requests + bookings hash).
+  # ---------------------------------------------------------------------
+  - type: web
+    name: taxi-backend
+    runtime: node
+    region: frankfurt
+    plan: free
+    rootDir: request-backend
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: node dist/main.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "24.16.0"
+      - key: PERSISTENCE_BACKEND
+        value: redis
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: RIS_V1_CLIENT_ID
+        sync: false
+      - key: RIS_V1_API_KEY
+        sync: false
+      - key: RIS_V2_CLIENT_ID
+        sync: false
+      - key: RIS_V2_API_KEY
+        sync: false
+
+  # ---------------------------------------------------------------------
+  # request-frontend
+  # Angular SPA served from Render's CDN. Free Static Site:
+  #   - always-on, no cold starts
+  #   - SPA routing fallback rewrites every path to index.html
+  # BACKEND_URL is injected at build time via Angular's esbuild `define`
+  # (see request-frontend/angular.json + src/environments/environment.ts).
+  # ---------------------------------------------------------------------
+  - type: web
+    name: taxi-frontend
+    runtime: static
+    rootDir: request-frontend
+    buildCommand: |
+      corepack enable
+      pnpm install --frozen-lockfile
+      pnpm exec ng build --define BACKEND_URL="\"${BACKEND_URL}\""
+    staticPublishPath: dist/frontend/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "24.16.0"
+      - key: BACKEND_URL
+        sync: false
+      - key: ASSET_PASSWORD
+        sync: false
+      - key: ASSET_INIT_VECTOR
+        sync: false

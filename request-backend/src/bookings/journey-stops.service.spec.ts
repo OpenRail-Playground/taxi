@@ -118,6 +118,32 @@ describe('JourneyStopsService', () => {
       });
     });
 
+    it('falls back to train terminus when booking destination is off-route', async () => {
+      ris.findJourneyId.mockResolvedValue('jid-1542');
+      ris.getJourneyEvents.mockResolvedValue([
+        ev({ type: 'DEPARTURE', evaNumber: '1', name: 'Berlin Hbf',   timeSchedule: '2026-05-29T17:13:00+02:00' }),
+        ev({ type: 'ARRIVAL',   evaNumber: '2', name: 'Hannover Hbf', timeSchedule: '2026-05-29T18:50:00+02:00' }),
+        ev({ type: 'DEPARTURE', evaNumber: '2', name: 'Hannover Hbf', timeSchedule: '2026-05-29T18:52:00+02:00' }),
+        ev({ type: 'ARRIVAL',   evaNumber: '3', name: 'Herford',      timeSchedule: '2026-05-29T19:38:00+02:00', cancelled: true }),
+        ev({ type: 'DEPARTURE', evaNumber: '3', name: 'Herford',      timeSchedule: '2026-05-29T19:39:00+02:00', cancelled: true }),
+        ev({ type: 'ARRIVAL',   evaNumber: '4', name: 'Köln Hbf',     timeSchedule: '2026-05-29T22:10:00+02:00', cancelled: true }),
+      ]);
+
+      const result = await service.getStops('ICE 1542', '2026-05-29', 'Bonn Hbf');
+
+      expect(result.origin.name).toBe('Berlin Hbf');
+      expect(result.destination).toEqual({
+        evaNumber: '4',
+        name: 'Köln Hbf',
+        scheduledTime: '2026-05-29T22:10:00+02:00',
+      });
+      expect(result.strandedAt).toEqual({
+        evaNumber: '2',
+        name: 'Hannover Hbf',
+        scheduledTime: '2026-05-29T18:50:00+02:00',
+      });
+    });
+
     it('returns 404 when the journey is fully cancelled from origin (origin departure cancelled)', async () => {
       ris.findJourneyId.mockResolvedValue('jid-cancel-origin');
       ris.getJourneyEvents.mockResolvedValue([
@@ -142,15 +168,15 @@ describe('JourneyStopsService', () => {
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it('returns 404 when the destination is not on the journey', async () => {
-      ris.findJourneyId.mockResolvedValue('jid-no-dest');
+    it('treats off-route booking destination as terminus when the whole train is cancelled', async () => {
+      ris.findJourneyId.mockResolvedValue('jid-cancel-offroute');
       ris.getJourneyEvents.mockResolvedValue([
-        ev({ type: 'DEPARTURE', evaNumber: '1', name: 'Köln Hbf',  timeSchedule: '2026-05-29T20:00:00+02:00' }),
-        ev({ type: 'ARRIVAL',   evaNumber: '2', name: 'Essen Hbf', timeSchedule: '2026-05-29T20:30:00+02:00' }),
+        ev({ type: 'DEPARTURE', evaNumber: '1', name: 'Berlin Hbf',  timeSchedule: '2026-05-29T17:13:00+02:00' }),
+        ev({ type: 'ARRIVAL',   evaNumber: '2', name: 'Köln Hbf',    timeSchedule: '2026-05-29T22:10:00+02:00', cancelled: true }),
       ]);
 
       await expect(
-        service.getStops('ICE 619', '2026-05-29', 'Hamburg Hbf'),
+        service.getStops('ICE 1542', '2026-05-29', 'Bonn Hbf'),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 

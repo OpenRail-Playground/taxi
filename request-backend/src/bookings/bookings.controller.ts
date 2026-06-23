@@ -29,7 +29,9 @@ export class BookingsController {
 
   @Post('validate')
   @HttpCode(200)
-  validate(@Body() body: Partial<BookingValidationRequestDto>): ValidatedBookingDto {
+  async validate(
+    @Body() body: Partial<BookingValidationRequestDto>,
+  ): Promise<ValidatedBookingDto> {
     const auftragsnummer =
       typeof body?.auftragsnummer === 'string' ? body.auftragsnummer.trim() : '';
     const lastName =
@@ -41,7 +43,7 @@ export class BookingsController {
       );
     }
 
-    const record = this.bookings.findByAuftragsnummer(auftragsnummer);
+    const record = await this.bookings.findByAuftragsnummer(auftragsnummer);
     if (!record) {
       throw new NotFoundException(BOOKING_NOT_FOUND_MESSAGE);
     }
@@ -58,7 +60,7 @@ export class BookingsController {
   async getJourneyStops(
     @Param('auftragsnummer') auftragsnummer: string,
   ): Promise<JourneyStopsResponse> {
-    const record = this.bookings.findByAuftragsnummer(auftragsnummer);
+    const record = await this.bookings.findByAuftragsnummer(auftragsnummer);
     if (!record) {
       throw new NotFoundException(`Booking ${auftragsnummer} not found.`);
     }

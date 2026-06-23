@@ -21,9 +21,19 @@ const COL_ZIELORT = 5;
 const COL_ZUGNUMMER = 7;
 const COL_REISETAG = 8;
 
+export abstract class BookingsRepository {
+  abstract findByAuftragsnummer(
+    auftragsnummer: string,
+  ): Promise<BookingRecord | undefined>;
+  abstract size(): Promise<number>;
+}
+
 @Injectable()
-export class BookingsRepository implements OnModuleInit {
-  private readonly logger = new Logger(BookingsRepository.name);
+export class ExcelBookingsRepository
+  extends BookingsRepository
+  implements OnModuleInit
+{
+  private readonly logger = new Logger(ExcelBookingsRepository.name);
   private readonly index = new Map<string, BookingRecord>();
 
   async onModuleInit(): Promise<void> {
@@ -35,61 +45,73 @@ export class BookingsRepository implements OnModuleInit {
       return;
     }
 
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile(filePath);
-    const sheet = workbook.getWorksheet(SHEET_NAME);
-    if (!sheet) {
-      throw new Error(
-        `Booking data file ${filePath} is missing the "${SHEET_NAME}" sheet.`,
-      );
+    const records = await parseBookingsFromExcel(filePath);
+    for (const record of records) {
+      this.index.set(record.auftragsnummer, record);
     }
 
-    let loaded = 0;
-    sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      if (rowNumber === 1) {
-        return;
-      }
-      const auftragsnummer = normalizeAuftragsnummer(
-        row.getCell(COL_AUFTRAGSNUMMER).value,
-      );
-      const trainNumber = String(row.getCell(COL_ZUGNUMMER).value ?? '').trim();
-      const destinationStation = String(
-        row.getCell(COL_ZIELORT).value ?? '',
-      ).trim();
-      const travelDate = normalizeDate(row.getCell(COL_REISETAG).value);
-      const passengerCount = normalizePassengerCount(
-        row.getCell(COL_ANZAHL_REISENDE).value,
-      );
-
-      if (!auftragsnummer || !trainNumber || !destinationStation || !travelDate) {
-        return;
-      }
-
-      this.index.set(auftragsnummer, {
-        auftragsnummer,
-        trainNumber,
-        travelDate,
-        destinationStation,
-        passengerCount,
-      });
-      loaded += 1;
-    });
-
     this.logger.log(
-      `Loaded ${loaded} bookings from ${filePath} (sheet "${SHEET_NAME}").`,
+      `Loaded ${records.length} bookings from ${filePath} (sheet "${SHEET_NAME}").`,
     );
   }
 
-  findByAuftragsnummer(auftragsnummer: string): BookingRecord | undefined {
+  async findByAuftragsnummer(
+    auftragsnummer: string,
+  ): Promise<BookingRecord | undefined> {
     return this.index.get(normalizeAuftragsnummer(auftragsnummer));
   }
 
-  size(): number {
+  async size(): Promise<number> {
     return this.index.size;
   }
 }
 
-function normalizeAuftragsnummer(value: unknown): string {
+export async function parseBookingsFromExcel(
+  filePath: string,
+): Promise<BookingRecord[]> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(filePath);
+  const sheet = workbook.getWorksheet(SHEET_NAME);
+  if (!sheet) {
+    throw new Error(
+      `Booking data file ${filePath} is missing the "${SHEET_NAME}" sheet.`,
+    );
+  }
+
+  const records: BookingRecord[] = [];
+  sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+    if (rowNumber === 1) {
+      return;
+    }
+    const auftragsnummer = normalizeAuftragsnummer(
+      row.getCell(COL_AUFTRAGSNUMMER).value,
+    );
+    const trainNumber = String(row.getCell(COL_ZUGNUMMER).value ?? '').trim();
+    const destinationStation = String(
+      row.getCell(COL_ZIELORT).value ?? '',
+    ).trim();
+    const travelDate = normalizeDate(row.getCell(COL_REISETAG).value);
+    const passengerCount = normalizePassengerCount(
+      row.getCell(COL_ANZAHL_REISENDE).value,
+    );
+
+    if (!auftragsnummer || !trainNumber || !destinationStation || !travelDate) {
+      return;
+    }
+
+    records.push({
+      auftragsnummer,
+      trainNumber,
+      travelDate,
+      destinationStation,
+      passengerCount,
+    });
+  });
+
+  return records;
+}
+
+export function normalizeAuftragsnummer(value: unknown): string {
   if (value === null || value === undefined) {
     return '';
   }

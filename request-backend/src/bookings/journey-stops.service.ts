@@ -121,15 +121,17 @@ export class JourneyStopsService {
     }
 
     const destNorm = destinationStation.trim().toLowerCase();
-    const destIdx = stops.findIndex(
+    const destOnRouteIdx = stops.findIndex(
       (s) => s.name.trim().toLowerCase() === destNorm,
     );
-    if (destIdx <= 0) {
+
+    const destIdx = destOnRouteIdx > 0 ? destOnRouteIdx : stops.length - 1;
+    const destination = stops[destIdx];
+    if (destIdx === 0) {
       throw new NotFoundException(
         `No journey found for ${trainNumber} on ${travelDate}.`,
       );
     }
-    const destination = stops[destIdx];
     if (destination.scheduledArrival === null) {
       throw new NotFoundException(
         `No journey found for ${trainNumber} on ${travelDate}.`,
