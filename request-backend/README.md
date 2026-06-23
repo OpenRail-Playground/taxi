@@ -1,6 +1,6 @@
 # Taxi Request Backend
 
-NestJS service (on Express) for creating and managing [`HelpRequest`](../shared/src/index.ts) entities, plus eligibility checks. Skeleton only — `/health` plus `/bookings/validate` are wired up so far.
+NestJS service (on Express) for creating and managing [`HelpRequest`](../shared/src/index.ts) entities, plus eligibility checks. Endpoints wired up: `/health`, `/bookings/validate`, and `/bookings/:auftragsnummer/journey-stops`.
 
 ## Prerequisites
 
@@ -47,6 +47,23 @@ Behaviour:
 
 Request/response types live in [`@taxi/shared`](../shared/src/index.ts) (`BookingValidationRequest`, `ValidatedBooking`) so the FE and BE share a single contract.
 
+## Journey stops (issue [#8](https://github.com/OpenRail-Playground/taxi/issues/8))
+
+```bash
+curl -s http://localhost:3000/bookings/258376699013/journey-stops
+```
+
+Behaviour:
+
+- `200 OK` with `{ stops: JourneyStop[] }` — all departure stops from origin up to and including the passenger's destination, each with `evaNumber`, `name`, `scheduledTime` (ISO-8601), and `cancelled`.
+- `404 Not Found` when the booking number is unknown, or when the RIS API finds no matching journey for the train and date.
+- `422 Unprocessable Entity` when the stored `trainNumber` cannot be parsed into a category + number.
+- `502 Bad Gateway` when the RIS API is unreachable or returns an unexpected error.
+
+Requires four environment variables (see `.env.example`): `RIS_V1_CLIENT_ID`, `RIS_V1_API_KEY`, `RIS_V2_CLIENT_ID`, `RIS_V2_API_KEY`.
+
+Response types live in [`@taxi/shared`](../shared/src/index.ts) (`JourneyStop`, `JourneyStopsResponse`).
+
 ## Booking data source
 
 The validation looks up the booking number in a local Excel file. The file is **never committed**; place it at:
@@ -71,7 +88,8 @@ request-backend/
 │   ├── main.ts            # bootstrap
 │   ├── app.module.ts      # root module
 │   ├── health/            # health module (sample)
-│   └── bookings/          # /bookings/validate (issue #5)
+│   ├── ris/               # RisJourneysClient — two-step RIS v1+v2 fetch (issue #8)
+│   └── bookings/          # /bookings/validate (issue #5), /bookings/:id/journey-stops (issue #8)
 ├── data/                  # file-based JSON storage (one folder per entity, gitignored)
 ├── nest-cli.json
 ├── package.json
