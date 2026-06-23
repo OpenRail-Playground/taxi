@@ -67,7 +67,13 @@ External actors and systems we expect:
 - **DB eligibility / disruption systems** — source of truth for whether a passenger is eligible. _Not integrated yet — currently stubbed in the backend._
 
 ### Technical context
-_TBD — will be filled in once a real flow exists end-to-end._
+
+Inbound HTTP surface (from browser):
+
+- `POST /help-requests` — passenger submits the confirmation-screen payload; returns 201 + the created entity
+- `GET /help-requests/:id` — retrieve a previously submitted HelpRequest by server-assigned id
+
+The BE persists submitted HelpRequest entities and re-verifies them against the booking spreadsheet.
 
 ---
 
@@ -77,6 +83,7 @@ _TBD — will be filled in once a real flow exists end-to-end._
 - **File-based persistence first.** The backend stores entities as one JSON file per id under `data/<entity>/<id>.json`, hidden behind a typed `FileRepository<T>` contract. Lets us iterate without a database during the hackathon, and swaps cleanly to a real store later.
 - **DB UX out of the box.** Frontend uses the published `@db-ux/*` packages so DB-branded UI is consistent and accessible from day one.
 - **Polyglot-ready repo layout.** No root package manager — each component manages its own dependencies, leaving room for non-Node components (e.g. a Python pooling service) later.
+- **Anti-fraud re-check on every help-request submission.** FE submits the full confirmation-screen payload → BE re-verifies journey identity against `BookingsRepository` → persists via `JsonFileRepository` → returns the entity with server-stamped id, createdAt, status, eligibility.
 
 ---
 
@@ -107,9 +114,14 @@ request-backend/src/
 ├── app.module.ts          root module
 ├── health/                GET /health
 ├── bookings/              POST /bookings/validate + GET /bookings/:auftragsnummer/journey-stops
+├── help-requests/         HelpRequestModule: POST /help-requests, GET /help-requests/:id
 ├── ris/                   RisJourneysClient + RisJourneysModule (DB RIS API integration)
 └── persistence/           generic file-based repository (issue #6)
 ```
+
+| Module | Providers | Depends on |
+| --- | --- | --- |
+| `HelpRequestModule` | `HelpRequestController`, `HelpRequestService`, `HelpRequestVerifier` | `PersistenceModule.forFeature({ entity: 'help-request' })`, `BookingsModule` |
 
 ### Level 2 — request-frontend internals
 _TBD — currently a single app shell using DB UX (`<db-page>`, `<db-header>`, `<db-brand>`, `<db-icon>`)._
@@ -139,6 +151,21 @@ Both calls require `Accept: application/vnd.de.db.ris+json` and separate `DB-Cli
 **Hackathon test data:** booking `258376699013`, train `ICE 647`, date `2026-05-29`. Journey has 15 stops with 12 cancelled from Düsseldorf Flughafen onward. The passenger's destination (Düsseldorf Hbf) is the 2nd stop and is not cancelled.
 
 _Other runtime flows (eligibility, voucher issuance, pooling) are TBD._
+
+### Help-request flows (issue #11)
+
+```
+(a) Create flow:
+    FE --(POST /help-requests)--> HelpRequestController
+    HelpRequestController --> HelpRequestVerifier (throws 404/403 on mismatch)
+    HelpRequestController --> HelpRequestService.create()
+    HelpRequestService --> JsonFileRepository.create() --> 201 + entity
+
+(b) Refetch flow:
+    FE --(GET /help-requests/:id)--> HelpRequestController.findById()
+    HelpRequestController --> HelpRequestService.findById()
+    HelpRequestService --> JsonFileRepository.findById() --> 200/404
+```
 
 ---
 
@@ -177,6 +204,9 @@ Credentials are loaded from the environment at runtime — never committed. The 
 ### API keys and secrets
 All secrets (RIS credentials, booking data path) are stored in `request-backend/.env` (gitignored). The committed `request-backend/.env.example` documents every required variable with empty values. Never commit `.env` or any file containing real credentials.
 
+### Anti-fraud re-verification
+Every `POST /help-requests` re-checks `trainNumber`, `travelDate`, `finalDestination` (mapped to `record.destinationStation`), and `adults+kids` (mapped to `record.passengerCount`) against `BookingsRepository`; a mismatch returns 403 Forbidden. `disruptionStation` is user-editable after the disruption occurs and is intentionally exempt from the check.
+
 ---
 
 ## 9. Architecture Decisions
@@ -195,6 +225,7 @@ Lightweight ADR list. Add a new row when a decision is load-bearing.
 | 8 | Stateless journey-stops endpoint | accepted | No session management cost; client already holds the `auftragsnummer` from the validate step. |
 | 9 | Destination truncation inclusive, case-insensitive | accepted | Passenger's destination station is the last meaningful stop; case-insensitive trim handles data inconsistencies between booking Excel and RIS name strings. |
 | 10 | Cancelled stops returned in list, not filtered out | accepted | Frontend needs to show which stops are affected to justify the taxi offer. |
+| ADR-005 | Strict equality re-check on POST /help-requests, returning 403 on tampering; disruptionStation exempt | accepted | disruptionStation is user-editable after disruption and is not part of the booking record. |
 
 ---
 
@@ -223,6 +254,7 @@ _TBD. Known starting points to capture as the prototype grows:_
 | Term | Meaning |
 | --- | --- |
 | Help request | A passenger's submission asking for assistance during a train disruption. |
+| HelpRequest | A passenger's assistance request submitted via the confirmation screen, containing journey, contact, and passenger details. The server-persisted entity with id, createdAt, status, and eligibility fields. |
 | Eligibility | Whether the passenger qualifies for a replacement-transport voucher under DB's rules. |
 | Voucher | A digital token entitling the passenger to a taxi ride at DB's expense. |
 | Pooling | Combining multiple help requests with compatible routes into a shared taxi ride. |

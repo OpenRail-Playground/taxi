@@ -64,6 +64,26 @@ Requires four environment variables (see `.env.example`): `RIS_V1_CLIENT_ID`, `R
 
 Response types live in [`@taxi/shared`](../shared/src/index.ts) (`JourneyStop`, `JourneyStopsResponse`).
 
+## Create / fetch help request (issue [#11](https://github.com/OpenRail-Playground/taxi/issues/11))
+
+```bash
+# Create a help request
+curl -s -X POST http://localhost:3000/help-requests \
+  -H 'Content-Type: application/json' \
+  -d '{"auftragsnummer":"258376672881","lastName":"Mustermann","journey":{"trainNumber":"ICE 619","travelDate":"2026-05-29","startStation":"Hamburg Hbf","disruptionStation":"Mannheim Hbf","finalDestination":"Basel SBB","alternativeTransportRequired":true},"contact":{"name":"Max Mustermann","phone":"+49 170","email":"max@example.com"},"passengers":{"adults":2,"kids":1,"bicycles":0,"wheelchairs":0}}'
+
+# Fetch it back by id
+curl -s http://localhost:3000/help-requests/<id-from-above>
+```
+
+Behaviour:
+
+- `201 Created` with full `HelpRequest` body (including server-stamped `id`, `createdAt`, `status`, `eligibility`) on success.
+- `403 Forbidden` if any of `trainNumber`, `travelDate`, `finalDestination`, or total passengers (`adults+kids`) mismatches the booking record (anti-fraud re-check). `disruptionStation` is exempt — users edit it after the disruption.
+- `404 Not Found` when the `auftragsnummer` is unknown.
+- `400 Bad Request` for missing or wrong-type fields; `422 Unprocessable Entity` for negative/non-integer passenger counts.
+- `GET /help-requests/:id` returns `200 OK` with the stored entity, `404 Not Found` when missing, `400 Bad Request` for an invalid id.
+
 ## Booking data source
 
 The validation looks up the booking number in a local Excel file. The file is **never committed**; place it at:

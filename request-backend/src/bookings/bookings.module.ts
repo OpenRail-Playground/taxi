@@ -9,5 +9,6 @@ import { JourneyStopsService } from './journey-stops.service';
   imports: [RisJourneysModule],
   controllers: [BookingsController],
   providers: [BookingsRepository, JourneyStopsService],
+  exports: [BookingsRepository],
 })
 export class BookingsModule {}
