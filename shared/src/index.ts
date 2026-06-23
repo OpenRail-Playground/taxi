@@ -62,3 +62,33 @@ export interface EligibilityResult {
   /** Human-readable explanation, suitable for showing to the passenger. */
   reason: string;
 }
+
+/**
+ * Payload accepted by `POST /bookings/validate`.
+ *
+ * For the hackathon we only validate the booking number; the last name
+ * is accepted for forward-compatibility with the DB backend integration
+ * (see issue #5) but is not checked against the local data source.
+ */
+export interface BookingValidationRequest {
+  /** Booking number (Auftragsnummer), 12-digit numeric string. */
+  auftragsnummer: string;
+  /** Last name of the main traveller (currently not validated server-side). */
+  lastName: string;
+}
+
+/**
+ * Successful response of `POST /bookings/validate`.
+ *
+ * Returned when the booking number is found in the data source. The
+ * fields mirror the minimum journey data the FE shows on the next step.
+ */
+export interface ValidatedBooking {
+  /** Identifier of the train run, e.g. "ICE 619". */
+  trainNumber: string;
+  /** ISO-8601 date (YYYY-MM-DD) of the journey. */
+  travelDate: string;
+  /** Station the passenger is travelling to. */
+  destinationStation: string;
+  passengerCount: number;
+}

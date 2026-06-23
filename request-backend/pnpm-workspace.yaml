@@ -5,3 +5,5 @@ blockExoticSubdeps: true
 allowBuilds:
   '@nestjs/core': true
 
+overrides:
+  '@taxi/shared': link:../shared
