@@ -43,4 +43,4 @@ request-backend/
 └── tsconfig.json
 ```
 
-Persistence plan: each entity gets its own folder under `data/` (e.g. `data/help-requests/<id>.json`). No DB required for the hackathon.
+Persistence is handled by the [`persistence` module](src/persistence/README.md) — a generic JSON-file-backed `FileRepository<T>` contract with atomic writes and no external dependencies.
