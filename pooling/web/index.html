@@ -12,18 +12,13 @@
       rel="stylesheet"
       href="https://db-ui.github.io/core/css/enterprise/db-ui-core.css"
     />
-    <link
-      rel="stylesheet"
-      href="https://db-ui.github.io/core/css/pattern-scaffolding-project-specific.css"
-    />
     <link rel="stylesheet" href="/static/styles.css" />
     <script src="/static/app.js" defer></script>
   </head>
-  <body class="tpl-intro">
+  <body>
     <header class="rea-header" role="banner">
       <div class="cmp-brand taxi-brand">
         <a href="/" title="Taxi Pooling Startseite" rel="home" class="taxi-brand__link">
-          <span class="taxi-brand__logo">DB</span>
           <span class="taxi-brand__title">Taxi Pooling</span>
         </a>
       </div>
@@ -31,7 +26,6 @@
 
     <main class="taxi-page">
       <section class="taxi-hero">
-        <p class="taxi-kicker">Mini-Weboberfläche</p>
         <h1 class="elm-headline">CSV hochladen und Pooling-Ergebnisse direkt ansehen</h1>
         <p>
           Diese Oberfläche lädt eine CSV-Datei zur bestehenden API hoch und zeigt die
@@ -42,14 +36,7 @@
       <section class="taxi-grid">
         <article class="taxi-panel">
           <h2 class="elm-headline taxi-panel__headline">CSV hochladen</h2>
-          <p>
-            Erforderliche Spalten: <code>id</code>, <code>source_lat</code>,
-            <code>source_lon</code>, <code>destination_name</code>,
-            <code>destination_lat</code>, <code>destination_lon</code>.
-          </p>
-
           <form id="upload-form" class="taxi-form">
-            <label class="elm-label" for="csv-file">CSV-Datei auswählen</label>
             <input
               class="elm-input taxi-file-input"
               id="csv-file"
@@ -68,9 +55,6 @@
               >
                 Pooling berechnen
               </button>
-              <a class="elm-button" data-variant="secondary" href="/sample.csv">
-                Beispiel-CSV herunterladen
-              </a>
             </div>
           </form>
 
@@ -80,17 +64,6 @@
             data-type="informative"
             aria-live="polite"
           ></div>
-
-          <details class="cmp-accordion taxi-help">
-            <summary>Hinweise</summary>
-            <p>
-              Die Berechnung nutzt im Backend die konfigurierte
-              <code>ORS_API_TOKEN</code>-Umgebungsvariable für die Distanzmatrix.
-            </p>
-            <p>
-              Alle Fahrten in einer Datei müssen dieselben Startkoordinaten verwenden.
-            </p>
-          </details>
         </article>
 
         <article class="taxi-panel">

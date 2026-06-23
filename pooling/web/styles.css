@@ -5,18 +5,25 @@
 body {
   margin: 0;
   background: #f8f8f6;
+  color: #1f2430;
+}
+
+.rea-header {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid #e5e5df;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.04);
 }
 
 .taxi-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 2.5rem 1.5rem 4rem;
 }
 
 .taxi-brand {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0.9rem 1.5rem;
 }
 
 .taxi-brand__link {
@@ -53,19 +60,34 @@ body {
 
 .taxi-hero {
   margin-bottom: 2rem;
+  padding: 2rem;
+  border: 1px solid #e5e5df;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f4f6fb 100%);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.05);
+}
+
+.taxi-hero h1 {
+  margin-bottom: 0.75rem;
+}
+
+.taxi-hero p:last-child {
+  max-width: 48rem;
+  margin-bottom: 0;
 }
 
 .taxi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.5rem;
+  align-items: start;
 }
 
 .taxi-panel {
   background: #fff;
   border: 1px solid #d7d7d2;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
 }
 
@@ -93,10 +115,6 @@ body {
   margin-top: 1rem;
 }
 
-.taxi-help {
-  margin-top: 1.5rem;
-}
-
 .taxi-empty-state {
   min-height: 12rem;
   display: flex;
@@ -115,6 +133,10 @@ body {
   gap: 1rem;
 }
 
+#pool-groups {
+  display: grid;
+}
+
 .taxi-summary__cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -123,7 +145,7 @@ body {
 
 .taxi-summary-card {
   border: 1px solid #d7d7d2;
-  border-radius: 0.5rem;
+  border-radius: 0.875rem;
   padding: 1rem;
   background: #fcfcfb;
 }
@@ -147,8 +169,11 @@ body {
 
 .taxi-pool-group {
   border: 1px solid #d7d7d2;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  border-radius: 0.875rem;
+  padding: 1.25rem;
+  background: #fcfcfb;
+  display: grid;
+  gap: 0.75rem;
 }
 
 .taxi-pool-group__title {
@@ -158,6 +183,10 @@ body {
 .taxi-pool-group__list {
   margin: 0;
   padding-left: 1.25rem;
+}
+
+.taxi-pool-group__list li + li {
+  margin-top: 0.5rem;
 }
 
 .taxi-results-panel {
@@ -177,6 +206,14 @@ body {
   .taxi-brand {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+
+  .taxi-page {
+    padding-top: 1.5rem;
+  }
+
+  .taxi-hero {
+    padding: 1.5rem;
   }
 
   .taxi-actions {
