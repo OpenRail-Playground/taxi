@@ -10,15 +10,6 @@
       </p>
     </header>
 
-    @if (submitted()) {
-      <db-notification
-        variant="standalone"
-        semantic="successful"
-        headline="Request submitted">
-        We received your request and will contact you shortly.
-      </db-notification>
-    }
-
     <!-- Journey Information -->
     <db-card spacing="medium" class="card">
       <h2 class="card-title">
@@ -107,10 +98,6 @@
 
       <dl class="info">
         <div class="info-row">
-          <dt class="info-key"><db-icon icon="person" /> Name</dt>
-          <dd class="info-val">{{ contact().name }}</dd>
-        </div>
-        <div class="info-row">
           <dt class="info-key"><db-icon icon="telephone" /> Phone number</dt>
           <dd class="info-val">{{ contact().phone }}</dd>
         </div>
@@ -141,7 +128,11 @@
     </db-card>
 
     <div class="actions">
-      <db-button variant="brand" width="full" (click)="submit()">
+      <db-button
+        variant="brand"
+        width="full"
+        iconTrailing="arrow_right"
+        (click)="submit()">
         Submit Request
       </db-button>
       <db-button variant="outlined" width="full" (click)="edit()">

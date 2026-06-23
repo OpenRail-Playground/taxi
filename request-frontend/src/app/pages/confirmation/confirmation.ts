@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IconTypes } from '@db-ux/core-foundations';
 import {
@@ -36,7 +36,6 @@ export class Confirmation {
 
   protected readonly contact = this.#store.contact;
   protected readonly journey = this.#store.journey;
-  protected readonly submitted = signal(false);
 
   protected readonly passengerRows = computed(() => {
     const passengers = this.#store.passengers();
@@ -56,7 +55,8 @@ export class Confirmation {
 
   protected submit(): void {
     // Real submission (POST /help-requests) would go here.
-    this.submitted.set(true);
+    this.#store.createTaxiBooking();
+    void this.#router.navigate(['/searching']);
   }
 
   protected edit(): void {

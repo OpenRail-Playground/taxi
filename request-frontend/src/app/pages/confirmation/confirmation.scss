@@ -70,8 +70,9 @@
   position: absolute;
   inset-block: 1.3rem -0.6rem;
   inline-size: 0;
+  /* stylelint-disable-next-line db-ux/use-border-color -- brand signal red to match the mockup */
   border-inline-start: var(--db-border-width-2xs) dotted
-    var(--db-adaptive-on-bg-basic-emphasis-60-default);
+    var(--db-critical-origin-default);
 }
 
 .timeline-body {
@@ -110,22 +111,12 @@
   font-weight: 600;
 }
 
-/* origin = green dot + solid green connector */
+/* green origin dot, red disruption dot; connectors stay red (see above) */
 .is-origin .timeline-dot {
   border-color: var(--db-successful-on-bg-basic-emphasis-100-default);
 }
 
-.is-origin .timeline-rail::after {
-  border-inline-start-style: solid;
-  border-color: var(--db-successful-on-bg-basic-emphasis-100-default);
-}
-
-/* disruption = red dot + dotted red connector */
 .is-disruption .timeline-dot {
-  border-color: var(--db-critical-on-bg-basic-emphasis-100-default);
-}
-
-.is-disruption .timeline-rail::after {
   border-color: var(--db-critical-on-bg-basic-emphasis-100-default);
 }
 

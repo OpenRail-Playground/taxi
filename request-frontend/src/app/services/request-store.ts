@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 
 import { JourneyStop, ValidatedBooking } from '../models/api.model';
 import {
@@ -10,6 +10,7 @@ import {
   DEMO_PASSENGERS,
   JourneyInfo,
   PassengerCounts,
+  TaxiBooking,
 } from '../models/request.model';
 
 /**
@@ -23,6 +24,28 @@ export class RequestStore {
   readonly contact = signal<ContactDetails>({ ...DEMO_CONTACT });
   readonly passengers = signal<PassengerCounts>({ ...DEMO_PASSENGERS });
   readonly journey = signal<JourneyInfo>({ ...DEMO_JOURNEY });
+  readonly taxiBooking = signal<TaxiBooking | null>(null);
+
+  /** Total people travelling (excludes bicycle / wheelchair items). */
+  readonly passengerTotal = computed(() => {
+    const p = this.passengers();
+    return p.adults + p.kids;
+  });
+
+  /** Create the placeholder taxi dispatch shown after submitting. */
+  createTaxiBooking(): void {
+    const serial = 10000 + Math.floor(Math.random() * 90000);
+    this.taxiBooking.set({
+      bookingNumber: `DB-${serial}-X`,
+      pickupPoint: 'Exit B · Platform 7',
+      estWaitMinutes: 3,
+      driver: {
+        name: 'Hans Müller',
+        car: 'Mercedes E-Class · Silver',
+        licensePlate: 'BI · DB 2746',
+      },
+    });
+  }
 
   updateBooking(patch: Partial<BookingDetails>): void {
     this.booking.update(current => ({ ...current, ...patch }));

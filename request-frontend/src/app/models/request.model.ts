@@ -26,6 +26,19 @@ export interface BookingDetails {
   lastName: string;
 }
 
+/**
+ * Taxi dispatch details shown after a request is submitted.
+ *
+ * There is no backend taxi-dispatch endpoint yet, so this is placeholder
+ * data generated client-side (the passenger count comes from the store).
+ */
+export interface TaxiBooking {
+  bookingNumber: string;
+  pickupPoint: string;
+  estWaitMinutes: number;
+  driver: { name: string; car: string; licensePlate: string };
+}
+
 export interface JourneyInfo {
   /** Affected train run, e.g. "ICE 202". */
   trainNumber: string;
@@ -42,7 +55,7 @@ export interface JourneyInfo {
 /** Demo data mirroring the mockups (Hamburg → Köln, disrupted at Bielefeld). */
 export const DEMO_CONTACT: ContactDetails = {
   name: 'Max Mustermann',
-  phone: '+49 163 1234567',
+  phone: '+49 171 123 45 67',
   email: 'max.mustermann@example.com',
 };
 

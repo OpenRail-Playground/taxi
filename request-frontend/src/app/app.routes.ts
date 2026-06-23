@@ -1,7 +1,13 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'journey-data' },
+  {
+    path: '',
+    pathMatch: 'full',
+    title: 'DB Taxi',
+    data: { headerMode: 'plain' },
+    loadComponent: () => import('./pages/welcome/welcome').then(m => m.Welcome),
+  },
   {
     path: 'journey-data',
     title: 'Journey Data',
@@ -31,5 +37,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/confirmation/confirmation').then(m => m.Confirmation),
   },
-  { path: '**', redirectTo: 'journey-data' },
+  {
+    path: 'searching',
+    title: 'Looking for a taxi',
+    data: { headerMode: 'home' },
+    loadComponent: () =>
+      import('./pages/searching/searching').then(m => m.Searching),
+  },
+  { path: '**', redirectTo: '' },
 ];

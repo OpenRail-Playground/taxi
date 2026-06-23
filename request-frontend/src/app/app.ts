@@ -10,7 +10,7 @@ import {
 } from '@db-ux/ngx-core-components';
 import { filter, map } from 'rxjs';
 
-type HeaderMode = 'home' | 'step';
+type HeaderMode = 'home' | 'step' | 'plain';
 
 /**
  * Ordered steps of the request flow. The back button walks this sequence

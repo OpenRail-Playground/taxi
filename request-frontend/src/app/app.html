@@ -1,12 +1,6 @@
 <db-page>
   <header class="topbar" [attr.data-mode]="headerMode()">
-    @if (headerMode() === 'home') {
-      <db-brand class="topbar-brand">Taxi</db-brand>
-      <db-link class="topbar-help" href="#" [showIcon]="false">
-        Help
-        <db-icon icon="question_mark_circle" />
-      </db-link>
-    } @else {
+    @if (headerMode() === 'step') {
       <db-button
         class="topbar-back"
         variant="ghost"
@@ -15,8 +9,13 @@
         (click)="back()">
         Back
       </db-button>
-      <db-brand class="topbar-brand">Taxi</db-brand>
-      <span class="topbar-spacer" aria-hidden="true"></span>
+    }
+    <db-brand class="topbar-brand">Taxi</db-brand>
+    @if (headerMode() !== 'plain') {
+      <db-link class="topbar-help" href="#" [showIcon]="false">
+        Help
+        <db-icon icon="question_mark_circle" />
+      </db-link>
     }
   </header>
 
