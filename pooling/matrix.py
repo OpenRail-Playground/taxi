@@ -1,6 +1,6 @@
 import requests
 
-from pooling.types import CustomerJourney
+from pooling_types import CustomerJourney
 
 ORS_MATRIX_URL = "https://api.openrouteservice.org/v2/matrix/driving-car"
 
