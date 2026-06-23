@@ -31,7 +31,7 @@ def build_city_summary_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
     return city_summary[["Zielstadt", "Personen-Anzahl"]]
 
 
-def _parse_args() -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Load a CSV file into a DataFrame.")
     parser.add_argument(
         "--csv-file",
@@ -44,7 +44,7 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    args = _parse_args()
+    args = parse_args()
     dataframe = load_csv_to_dataframe(args.csv_file.resolve())
     city_summary_df = build_city_summary_dataframe(dataframe)
     print(f"City summary DataFrame shape: {city_summary_df.shape}")
