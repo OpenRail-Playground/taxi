@@ -73,3 +73,41 @@ describe('create', () => {
     }
   });
 });
+
+describe('findById', () => {
+  let tmpDir: string;
+  let repo: JsonFileRepository<{ id: string; name: string }>;
+
+  beforeAll(async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'taxi-repo-findbyid-'));
+  });
+
+  afterAll(async () => {
+    await fs.rm(tmpDir, { recursive: true, force: true });
+  });
+
+  beforeEach(() => {
+    repo = new JsonFileRepository('item', tmpDir);
+  });
+
+  it('returns null for an unknown but valid id', async () => {
+    const result = await repo.findById('550e8400-e29b-41d4-a716-446655440000');
+    expect(result).toBeNull();
+  });
+
+  it('returns the exact persisted object for a known id (deep equal)', async () => {
+    const created = await repo.create({ name: 'hello' });
+    const found = await repo.findById(created.id);
+    expect(found).toEqual(created);
+  });
+
+  it('throws InvalidIdError for empty string', async () => {
+    const { InvalidIdError } = await import('./errors');
+    await expect(repo.findById('')).rejects.toThrow(InvalidIdError);
+  });
+
+  it('throws InvalidIdError for path traversal id', async () => {
+    const { InvalidIdError } = await import('./errors');
+    await expect(repo.findById('../etc/passwd')).rejects.toThrow(InvalidIdError);
+  });
+});
