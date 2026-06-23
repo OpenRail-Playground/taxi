@@ -1,0 +1,7 @@
+{
+  "comments": false,
+  "trailing-commas": false,
+  "duplicate-keys": false,
+  "log-files": true,
+  "continue": true
+}

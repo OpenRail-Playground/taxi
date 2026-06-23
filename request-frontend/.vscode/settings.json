@@ -1,0 +1,15 @@
+{
+  "i18n-ally.localesPaths": ["public/i18n", "src/app/locale"],
+  "i18n-ally.keystyle": "nested",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "stylelint.validate": ["css", "scss", "postcss"],
+  "cssVariables.lookupFiles": [
+    "**/*.css",
+    "**/*.scss",
+    "**/*.sass",
+    "**/*.less",
+    "node_modules/@db-ui/foundations/ide/db.ide.css"
+  ],
+  "chat.mcp.access": "all"
+}
