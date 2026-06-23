@@ -1,0 +1,49 @@
+<db-section spacing="small">
+  <div class="page">
+    <app-journey-stepper [current]="1" />
+
+    <header class="page-head">
+      <h1>Journey Data</h1>
+      <p>
+        Please enter the details of your journey so we can check your
+        eligibility for a taxi or another replacement service.
+      </p>
+    </header>
+
+    <div class="fields">
+      <db-input
+        label="Order ID (12 digits)"
+        type="text"
+        inputmode="numeric"
+        placeholder="e.g. 123456789012"
+        [value]="booking().orderId"
+        (valueChange)="updateOrderId($event)"
+        message="Please enter the 12-digit order ID from your ticket." />
+
+      <db-input
+        label="Last name of main traveller"
+        type="text"
+        placeholder="e.g. Mustermann"
+        [value]="booking().lastName"
+        (valueChange)="updateLastName($event)"
+        message="Please enter the last name of the main traveller." />
+    </div>
+
+    <db-button
+      variant="brand"
+      width="full"
+      iconTrailing="arrow_right"
+      (click)="continue()">
+      Continue
+    </db-button>
+
+    <db-notification
+      variant="standalone"
+      icon="lock_closed"
+      headline="Your data is safe with us"
+      class="privacy">
+      We use your data solely to check your eligibility for a taxi or another
+      replacement service.
+    </db-notification>
+  </div>
+</db-section>

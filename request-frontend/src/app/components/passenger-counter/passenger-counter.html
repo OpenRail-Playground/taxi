@@ -1,0 +1,27 @@
+<div class="counter">
+  <span class="counter-label">
+    <db-icon [icon]="icon()" weight="24" class="counter-icon" />
+    {{ label() }}
+  </span>
+
+  <span class="counter-controls">
+    <db-button
+      variant="outlined"
+      icon="minus"
+      [noText]="true"
+      [disabled]="value() <= min()"
+      (click)="decrease()">
+      Decrease {{ label() }}
+    </db-button>
+
+    <span class="counter-value" aria-live="polite">{{ value() }}</span>
+
+    <db-button
+      variant="outlined"
+      icon="plus"
+      [noText]="true"
+      (click)="increase()">
+      Increase {{ label() }}
+    </db-button>
+  </span>
+</div>

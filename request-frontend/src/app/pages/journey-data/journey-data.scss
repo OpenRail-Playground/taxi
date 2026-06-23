@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+.page {
+  max-inline-size: 30rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-lg);
+}
+
+.page-head {
+  h1 {
+    margin-block: 0 var(--db-spacing-fixed-2xs);
+  }
+
+  p {
+    margin: 0;
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  }
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-lg);
+}
+
+.privacy {
+  margin-block-start: var(--db-spacing-fixed-2xs);
+}

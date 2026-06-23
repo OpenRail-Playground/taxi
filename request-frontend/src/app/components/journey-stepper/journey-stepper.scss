@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+.stepper {
+  --marker-size: 2rem;
+
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepper-item {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--db-spacing-fixed-2xs);
+  text-align: center;
+
+  // connector line joining this marker to the previous one
+  &:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(var(--marker-size) / 2);
+    inset-inline-end: 50%;
+    inline-size: 100%;
+    block-size: var(--db-border-width-2xs);
+    background: var(--db-adaptive-on-bg-basic-emphasis-50-default);
+  }
+}
+
+.stepper-marker {
+  position: relative;
+  z-index: 1;
+  inline-size: var(--marker-size);
+  block-size: var(--marker-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--db-border-width-2xs) solid
+    var(--db-adaptive-on-bg-basic-emphasis-50-default);
+  border-radius: var(--db-border-radius-full);
+  background: var(--db-neutral-bg-basic-level-1-default, #fff);
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  font-weight: 700;
+}
+
+.stepper-label {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+}
+
+// completed steps: green ring + check
+.stepper-item[data-state='done'] {
+  .stepper-marker {
+    border-color: var(--db-successful-on-bg-basic-emphasis-100-default);
+    color: var(--db-successful-on-bg-basic-emphasis-100-default);
+  }
+}
+
+// active step: solid DB-red disc with white number
+.stepper-item[data-state='current'] {
+  .stepper-marker {
+    border-color: transparent;
+    background: var(--db-critical-origin-default);
+    color: var(--db-critical-on-origin-default);
+  }
+
+  .stepper-label {
+    color: var(--db-adaptive-on-bg-basic-emphasis-100-default);
+    font-weight: 700;
+  }
+}
+
+// any connector that leads into a reached step is green
+.stepper-item[data-state='done']::before,
+.stepper-item[data-state='current']::before {
+  background: var(--db-successful-on-bg-basic-emphasis-100-default);
+}
