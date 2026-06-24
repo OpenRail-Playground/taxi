@@ -10,7 +10,13 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from pooling.matrix import get_distance_matrix_and_destination_mapping
-from pooling.pooling import pool_taxi_rides
+from pooling.pooling import (
+    __MAX_DETOUR_FACTOR__,
+    __MAX_PASSENGERS_PER_TAXI__,
+    __MAX_POOL_DISTANCE_PER_PERSON_KM__,
+    __MAX_ROUTE_DISTANCE_KM__,
+    pool_taxi_rides,
+)
 from pooling.types import CustomerJourney, TaxiPoolingStatus
 
 app = FastAPI(title="Taxi Pooling API")
@@ -100,6 +106,16 @@ def _get_source_coordinates(customer_journeys: list[CustomerJourney]) -> tuple[f
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 async def index() -> FileResponse:
     return FileResponse(WEB_DIR / "index.html")
+
+
+@app.get("/pooling-parameters")
+async def get_pooling_parameters() -> dict[str, float | int]:
+    return {
+        "max_passengers_per_taxi": __MAX_PASSENGERS_PER_TAXI__,
+        "max_pool_distance_per_person_km": __MAX_POOL_DISTANCE_PER_PERSON_KM__,
+        "max_route_distance_km": __MAX_ROUTE_DISTANCE_KM__,
+        "max_detour_factor": __MAX_DETOUR_FACTOR__,
+    }
 
 
 @app.post("/pool-taxis")
