@@ -25,4 +25,5 @@ class CustomerJourney(TypedDict):
     status: TaxiPoolingStatus
     pool_number: int
     intermediate_stops: list[str]
+    travel_distance_km: float | None
     deny_reason: TaxiPoolingDenyReason | None

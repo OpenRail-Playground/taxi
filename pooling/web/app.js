@@ -135,6 +135,7 @@ function renderSummary(journeys) {
                       <li>
                         ${escapeHtml(member.id)} → ${escapeHtml(member.destination_name)}
                         ${member.intermediate_stops.length ? `(über ${escapeHtml(member.intermediate_stops.join(", "))})` : ""}
+                        ${typeof member.travel_distance_km === "number" ? `(${escapeHtml(formatDistance(member.travel_distance_km))})` : ""}
                       </li>
                     `,
                   )
@@ -159,10 +160,15 @@ function renderTable(journeys) {
           <td>${journey.deny_reason ? escapeHtml(formatDenyReason(journey.deny_reason)) : "-"}</td>
           <td>${journey.pool_number > 0 ? escapeHtml(String(journey.pool_number)) : "-"}</td>
           <td>${journey.intermediate_stops.length ? escapeHtml(journey.intermediate_stops.join(", ")) : "-"}</td>
+          <td>${typeof journey.travel_distance_km === "number" ? escapeHtml(formatDistance(journey.travel_distance_km)) : "-"}</td>
         </tr>
       `,
     )
     .join("");
+}
+
+function formatDistance(distanceKm) {
+  return `${distanceKm.toFixed(1)} km`;
 }
 
 function formatDenyReason(reason) {

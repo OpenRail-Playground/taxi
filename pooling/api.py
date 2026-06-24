@@ -52,6 +52,7 @@ def _parse_customer_journeys_from_csv(content: str) -> list[CustomerJourney]:
                     status=TaxiPoolingStatus.WAITING,
                     pool_number=0,
                     intermediate_stops=[],
+                    travel_distance_km=None,
                     deny_reason=None,
                 )
             )
