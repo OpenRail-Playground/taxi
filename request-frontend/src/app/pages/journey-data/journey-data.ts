@@ -1,5 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import {
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
   DBButton,
@@ -27,6 +34,22 @@ export class JourneyData {
   protected readonly booking = this.#store.booking;
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  protected readonly errorBox = viewChild<ElementRef<HTMLElement>>('errorBox');
+
+  constructor() {
+    // When an error appears, scroll it into view so mobile users see it
+    // even if they had scrolled down to tap "Continue".
+    effect(() => {
+      if (this.error() === null) return;
+      queueMicrotask(() => {
+        this.errorBox()?.nativeElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      });
+    });
+  }
 
   protected updateOrderId(value: string | undefined): void {
     this.#store.updateBooking({ orderId: value ?? '' });
