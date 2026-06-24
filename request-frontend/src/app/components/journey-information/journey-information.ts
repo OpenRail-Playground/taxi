@@ -21,4 +21,6 @@ import { JourneyInfo } from '../../models/request.model';
 })
 export class JourneyInformation {
   readonly journey = input.required<JourneyInfo>();
+  /** Whether to show the "Taxi required" banner (Confirmation only). */
+  readonly showTaxi = input(true);
 }

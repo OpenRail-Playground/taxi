@@ -12,7 +12,7 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({
         scrollPositionRestoration: 'top',
         anchorScrolling: 'enabled',
-      }),
+      })
     ),
     provideHttpClient(withFetch()),
     provideServiceWorker('ngsw-worker.js', {

@@ -58,7 +58,7 @@
     </li>
   </ol>
 
-  @if (journey().taxi; as taxi) {
+  @if (showTaxi() && journey().taxi; as taxi) {
     <db-notification
       variant="standalone"
       semantic="warning"

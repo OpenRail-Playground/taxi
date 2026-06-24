@@ -59,9 +59,8 @@
   position: absolute;
   inset-block: 1.3rem -0.6rem;
   inline-size: 0;
-  /* stylelint-disable-next-line db-ux/use-border-color -- brand signal red to match the mockup */
   border-inline-start: var(--db-border-width-2xs) solid
-    var(--db-critical-origin-default);
+    var(--db-adaptive-on-bg-basic-emphasis-100-default);
 }
 
 /* ... disruption onwards = dotted (no further service) */

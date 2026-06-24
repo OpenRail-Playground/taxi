@@ -34,13 +34,9 @@
       </db-notification>
     }
 
-    <app-journey-information [journey]="journey()" />
+    <app-journey-information [journey]="journey()" [showTaxi]="false" />
 
-    <db-button
-      variant="brand"
-      width="full"
-      iconTrailing="arrow_right"
-      (click)="continue()">
+    <db-button variant="brand" width="full" (click)="continue()">
       Continue
     </db-button>
   </div>
