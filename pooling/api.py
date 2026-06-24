@@ -28,6 +28,22 @@ _REQUIRED_COLUMNS = {
 }
 
 
+def _parse_passenger_count(row: dict[str, str], row_number: int) -> int:
+    pax_value = row.get("pax")
+    if pax_value is None:
+        return 1
+
+    try:
+        passenger_count = int(pax_value.strip())
+    except (AttributeError, ValueError) as exc:
+        raise ValueError(f"Invalid pax value in row {row_number}: {pax_value!r}") from exc
+
+    if passenger_count < 1:
+        raise ValueError(f"Invalid pax value in row {row_number}: {pax_value!r}")
+
+    return passenger_count
+
+
 def _parse_customer_journeys_from_csv(content: str) -> list[CustomerJourney]:
     reader = csv.DictReader(StringIO(content), delimiter=";")
     if reader.fieldnames is None:
@@ -41,21 +57,25 @@ def _parse_customer_journeys_from_csv(content: str) -> list[CustomerJourney]:
     customer_journeys: list[CustomerJourney] = []
     for row_number, row in enumerate(reader, start=2):
         try:
-            customer_journeys.append(
-                CustomerJourney(
-                    id=row["id"].strip(),
-                    source_lat=float(row["source_lat"]),
-                    source_lon=float(row["source_lon"]),
-                    destination_name=row["destination_name"].strip(),
-                    destination_lat=float(row["destination_lat"]),
-                    destination_lon=float(row["destination_lon"]),
-                    status=TaxiPoolingStatus.WAITING,
-                    pool_number=0,
-                    intermediate_stops=[],
-                    travel_distance_km=None,
-                    deny_reason=None,
+            base_id = row["id"].strip()
+            passenger_count = _parse_passenger_count(row, row_number)
+
+            for passenger_index in range(1, passenger_count + 1):
+                customer_journeys.append(
+                    CustomerJourney(
+                        id=f"{base_id}-{passenger_index}",
+                        source_lat=float(row["source_lat"]),
+                        source_lon=float(row["source_lon"]),
+                        destination_name=row["destination_name"].strip(),
+                        destination_lat=float(row["destination_lat"]),
+                        destination_lon=float(row["destination_lon"]),
+                        status=TaxiPoolingStatus.WAITING,
+                        pool_number=0,
+                        intermediate_stops=[],
+                        travel_distance_km=None,
+                        deny_reason=None,
+                    )
                 )
-            )
         except (TypeError, ValueError) as exc:
             raise ValueError(f"Invalid data in row {row_number}: {exc}") from exc
 
