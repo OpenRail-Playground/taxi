@@ -114,6 +114,23 @@ function renderSummary(journeys) {
     .join("");
 
   const sortedPools = [...pools.entries()].sort((left, right) => left[0] - right[0]);
+  const totalActualPoolDistanceKm = sortedPools.reduce((sum, [, members]) => {
+    const actualPoolDistanceKm = members.reduce((maxDistance, member) => {
+      if (typeof member.travel_distance_km !== "number") {
+        return maxDistance;
+      }
+      return Math.max(maxDistance, member.travel_distance_km);
+    }, 0);
+    return sum + actualPoolDistanceKm;
+  }, 0);
+
+  summaryCards.innerHTML += `
+    <article class="taxi-summary-card">
+      <p class="taxi-summary-card__label">Pool-Strecke gesamt</p>
+      <p class="taxi-summary-card__value">${escapeHtml(formatDistance(totalActualPoolDistanceKm))}</p>
+    </article>
+  `;
+
   if (sortedPools.length === 0) {
     poolGroups.innerHTML = "<p>Es wurden keine Pools gebildet.</p>";
     return;
@@ -124,10 +141,17 @@ function renderSummary(journeys) {
       ${sortedPools
         .map(([poolNumber, members]) => {
           const destinations = [...new Set(members.map((member) => member.destination_name))].join(", ");
+          const actualPoolDistanceKm = members.reduce((maxDistance, member) => {
+            if (typeof member.travel_distance_km !== "number") {
+              return maxDistance;
+            }
+            return Math.max(maxDistance, member.travel_distance_km);
+          }, 0);
           return `
             <section class="taxi-pool-group">
               <h3 class="taxi-pool-group__title">Pool ${escapeHtml(String(poolNumber))}</h3>
               <p><strong>Ziele:</strong> ${escapeHtml(destinations)}</p>
+              <p><strong>Tats&auml;chliche Strecke:</strong> ${escapeHtml(formatDistance(actualPoolDistanceKm))}</p>
               <ul class="taxi-pool-group__list">
                 ${members
                   .map(
@@ -177,6 +201,8 @@ function formatDenyReason(reason) {
       return "Maximale Zieldistanz überschritten";
     case "POOL_DISTANCE_EXCEEDED":
       return "Maximale Pool-Distanz überschritten";
+    case "MAX_DETOUR_EXCEEDED":
+      return "Maximaler Umweg überschritten";
     default:
       return reason;
   }
