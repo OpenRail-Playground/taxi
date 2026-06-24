@@ -4,6 +4,7 @@ import {
   DBButton,
   DBCard,
   DBIcon,
+  DBLink,
   DBNotification,
   DBSection,
 } from '@db-ux/ngx-core-components';
@@ -14,7 +15,15 @@ import { RequestStore } from '../../services/request-store';
 /** Post-submission state — searching for a nearby taxi. */
 @Component({
   selector: 'app-searching',
-  imports: [DBSection, DBCard, DBButton, DBIcon, DBNotification, JourneyScene],
+  imports: [
+    DBSection,
+    DBCard,
+    DBButton,
+    DBIcon,
+    DBLink,
+    DBNotification,
+    JourneyScene,
+  ],
   templateUrl: './searching.html',
   styleUrl: './searching.scss',
 })
