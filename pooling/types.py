@@ -13,6 +13,7 @@ class TaxiPoolingStatus(StrEnum):
 class TaxiPoolingDenyReason(StrEnum):
     MAX_ROUTE_DISTANCE_EXCEEDED = "MAX_ROUTE_DISTANCE_EXCEEDED"
     POOL_DISTANCE_EXCEEDED = "POOL_DISTANCE_EXCEEDED"
+    MAX_DETOUR_EXCEEDED = "MAX_DETOUR_EXCEEDED"
 
 
 class CustomerJourney(TypedDict):
