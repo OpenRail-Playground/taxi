@@ -1,8 +1,8 @@
 from pooling.types import CustomerJourney, TaxiPoolingDenyReason, TaxiPoolingStatus
 
 __MAX_PASSENGERS_PER_TAXI__ = 3
-__MAX_ROUTE_DISTANCE_KM__ = 150.0
 __MAX_POOL_DISTANCE_PER_PERSON_KM__ = 50.0
+__MAX_ROUTE_DISTANCE_KM__ = __MAX_POOL_DISTANCE_PER_PERSON_KM__ * __MAX_PASSENGERS_PER_TAXI__
 
 
 def _get_destination_distances(distance_matrix: list[list[float]], destination_index: int) -> list[float]:
