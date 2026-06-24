@@ -115,6 +115,34 @@ body {
   margin-top: 1rem;
 }
 
+.taxi-parameters {
+  margin-top: 1rem;
+  border: 1px solid #d7d7d2;
+  border-radius: 0.75rem;
+  background: #fcfcfb;
+  padding: 0.9rem;
+}
+
+.taxi-parameters__headline {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.taxi-parameters__content {
+  color: #3c3c3c;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.taxi-parameters__list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.taxi-parameters__list li + li {
+  margin-top: 0.3rem;
+}
+
 .taxi-empty-state {
   min-height: 12rem;
   display: flex;

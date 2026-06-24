@@ -8,6 +8,48 @@ const summaryCards = document.getElementById("summary-cards");
 const poolGroups = document.getElementById("pool-groups");
 const resultsPanel = document.getElementById("results-panel");
 const resultsTableBody = document.querySelector("#results-table tbody");
+const poolingParametersContainer = document.getElementById("pooling-parameters");
+
+loadPoolingParameters();
+
+async function loadPoolingParameters() {
+  if (!poolingParametersContainer) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/pooling-parameters");
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const parameters = await response.json();
+    renderPoolingParameters(parameters);
+  } catch (error) {
+    console.error(error);
+    poolingParametersContainer.textContent = "Parameter konnten nicht geladen werden.";
+  }
+}
+
+function renderPoolingParameters(parameters) {
+  if (!poolingParametersContainer) {
+    return;
+  }
+
+  const maxPassengers = Number(parameters.max_passengers_per_taxi);
+  const maxDistancePerPerson = Number(parameters.max_pool_distance_per_person_km);
+  const maxRouteDistance = Number(parameters.max_route_distance_km);
+  const maxDetourFactor = Number(parameters.max_detour_factor);
+
+  poolingParametersContainer.innerHTML = `
+    <ul class="taxi-parameters__list">
+      <li>Max. Fahrg&auml;ste pro Taxi: <strong>${escapeHtml(String(maxPassengers))}</strong></li>
+      <li>Max. Pool-Strecke pro Person: <strong>${escapeHtml(formatDistance(maxDistancePerPerson))}</strong></li>
+      <li>Max. Pool-Strecke pro Fahrt: <strong>${escapeHtml(formatDistance(maxRouteDistance))}</strong></li>
+      <li>Max. Umwegfaktor: <strong>${escapeHtml(maxDetourFactor.toFixed(2))}</strong> (${escapeHtml(String(Math.round((maxDetourFactor - 1) * 100)))}% Umweg)</li>
+    </ul>
+  `;
+}
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
