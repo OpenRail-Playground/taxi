@@ -14,9 +14,9 @@ See issue [#1](https://github.com/OpenRail-Playground/taxi/issues/1) for scope.
 
 | Surface | URL | Notes |
 |---|---|---|
-| Frontend | https://taxi-frontend-loyq.onrender.com | Render Static Site, always-on |
-| Backend  | https://taxi-backend-iq95.onrender.com  | Render Web Service, free tier — sleeps after 15 min idle (cold start ~30–60 s) |
-| Health   | https://taxi-backend-iq95.onrender.com/health | Use this to wake the backend before a demo |
+| Frontend | https://dbringer.de | Render Static Site, always-on |
+| Backend  | https://api.dbringer.de  | Render Web Service, free tier — sleeps after 15 min idle (cold start ~30–60 s) |
+| Health   | https://api.dbringer.de/health | Use this to wake the backend before a demo |
 
 ## Layout
 

@@ -203,15 +203,15 @@ Browser
   │
   ▼
 ┌────────────────────────────────┐
-│ taxi-frontend.onrender.com     │   Render Static Site (CDN, always-on)
-│ Angular SPA, BACKEND_URL       │
+│ dbringer.de                    │   Render Static Site (CDN, always-on)
+│ Angular SPA, BACKEND_URL       │   custom domain on taxi-frontend
 │ baked in at build time         │
 └──────────────┬─────────────────┘
-               │  XHR
+               │  XHR -> https://api.dbringer.de
                ▼
 ┌────────────────────────────────┐
-│ taxi-backend.onrender.com      │   Render Web Service (free, sleeps 15 min idle)
-│ NestJS, PERSISTENCE_BACKEND=   │
+│ api.dbringer.de                │   Render Web Service (free, sleeps 15 min idle)
+│ NestJS, PERSISTENCE_BACKEND=   │   custom domain on taxi-backend
 │ redis                          │
 └──────────────┬─────────────────┘
                │

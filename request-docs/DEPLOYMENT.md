@@ -15,13 +15,13 @@ Production deployment of the Taxi prototype.
 ```
 Browser
   │
-  │  https://taxi-frontend.onrender.com   (Render Static Site, CDN, always-on)
+  │  https://dbringer.de   (Render Static Site, CDN, always-on)
   ▼
 ┌──────────────────┐
 │ Angular SPA      │ ── XHR ──┐
 │ request-frontend │          │
 └──────────────────┘          │
-                              ▼  https://taxi-backend.onrender.com
+                              ▼  https://api.dbringer.de
                     ┌────────────────────────┐
                     │ NestJS                 │
                     │ request-backend        │
@@ -38,6 +38,8 @@ Browser
             - bookings hash (seeded once
               from local xlsx)
 ```
+
+The two custom domains (`dbringer.de`, `api.dbringer.de`) sit in front of Render's auto-generated `*.onrender.com` hostnames. The Render hostnames keep working alongside the custom domains — useful while DNS propagates or for debugging.
 
 Two external dependencies:
 
@@ -131,13 +133,13 @@ Save. Render queues a redeploy automatically.
 
 ### 4c. Set frontend env vars
 
-Once the backend deploys successfully, Render assigns it a public URL like `https://taxi-backend-xxxx.onrender.com`. Copy it.
+Once the backend deploys successfully, Render assigns it a public URL like `https://taxi-backend-xxxx.onrender.com`. The default `BACKEND_URL` in `render.yaml` is `https://api.dbringer.de` (our custom domain in front of `taxi-backend`); if you fork this repo you'll want to either change the value in `render.yaml` to your own backend URL or override it in the Render dashboard.
 
 Open the `taxi-frontend` service → **Environment**:
 
 | Key | Value |
 | --- | --- |
-| `BACKEND_URL` | `https://taxi-backend-xxxx.onrender.com` (no trailing slash) |
+| `BACKEND_URL` | `https://api.dbringer.de` (or your backend URL; no trailing slash) |
 | `ASSET_PASSWORD` | from your local `request-frontend/.env` |
 | `ASSET_INIT_VECTOR` | from your local `request-frontend/.env` |
 
@@ -145,29 +147,40 @@ The `ASSET_*` vars decrypt the DB-UX theme assets at install time. Without them 
 
 Save. Render redeploys.
 
-### 4d. Verify
+### 4d. (Optional) Custom domains
+
+Render auto-generates hostnames like `taxi-frontend-loyq.onrender.com` and `taxi-backend-iq95.onrender.com` on first deploy. To put a real domain in front:
+
+1. `taxi-backend` → Settings → **Custom Domains** → add `api.dbringer.de`.
+2. `taxi-frontend` → Settings → **Custom Domains** → add `dbringer.de` (and `www.dbringer.de` if desired).
+3. Render shows the DNS records to set at your registrar (`A`/`AAAA` for the apex, `CNAME` for subdomains). Set them and wait for TLS issuance (~5 minutes).
+4. The Render-generated `*.onrender.com` hostnames keep working alongside the custom domains.
+
+If your custom domain differs from `api.dbringer.de`, also update `BACKEND_URL` in [`render.yaml`](../render.yaml) (or override in the dashboard) and trigger a frontend rebuild so the new URL is baked into the bundle.
+
+### 4e. Verify
 
 After both services finish building (~5 min each on free tier):
 
 ```bash
 # Health
-curl https://taxi-backend-xxxx.onrender.com/health
+curl https://api.dbringer.de/health
 # → {"status":"ok","timestamp":"..."}
 
 # Bookings validate (proves the bookings hash was seeded)
-curl -s -X POST https://taxi-backend-xxxx.onrender.com/bookings/validate \
+curl -s -X POST https://api.dbringer.de/bookings/validate \
   -H 'Content-Type: application/json' \
   -d '{"auftragsnummer":"258376672881","lastName":"Mustermann"}'
 # → {"trainNumber":"ICE 619","travelDate":"2026-05-29",...}
 
 # Help-request create (proves help-request persistence is wired)
-curl -s -X POST https://taxi-backend-xxxx.onrender.com/help-requests \
+curl -s -X POST https://api.dbringer.de/help-requests \
   -H 'Content-Type: application/json' \
   -d '{...full DTO...}'
 # → 201 + entity with server-generated id
 
 # Frontend
-open https://taxi-frontend-yyyy.onrender.com
+open https://dbringer.de
 ```
 
 In the Upstash console → **Data Browser** you should see the help-request key appear.
@@ -182,7 +195,7 @@ The backend free Web Service spins down after 15 minutes of inactivity. **The fi
 
 Mitigation for live demos:
 
-- Hit `https://taxi-backend-xxxx.onrender.com/health` 30 seconds before the presentation.
+- Hit `https://api.dbringer.de/health` 30 seconds before the presentation.
 - Or set up a free cron-ping from [cron-job.org](https://cron-job.org) hitting `/health` every 10 minutes. Costs nothing; keeps the service warm.
 
 The frontend Static Site is on a CDN and never sleeps.
