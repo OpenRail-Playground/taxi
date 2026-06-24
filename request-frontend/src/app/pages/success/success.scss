@@ -1,0 +1,221 @@
+:host {
+  display: block;
+}
+
+.page {
+  max-inline-size: 30rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-md);
+}
+
+/* success badge */
+.success-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--db-spacing-fixed-xs);
+  margin: 0;
+  font-weight: 700;
+  color: var(--db-successful-on-bg-basic-emphasis-100-default);
+}
+
+.badge-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--db-border-radius-full);
+  background: var(--db-successful-on-bg-basic-emphasis-100-default);
+  color: var(--db-neutral-bg-basic-level-1-default, #fff);
+}
+
+.page-head {
+  h1 {
+    margin-block: 0 var(--db-spacing-fixed-2xs);
+  }
+
+  p {
+    margin: 0;
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  }
+}
+
+/* generated map */
+.map {
+  position: relative;
+  block-size: 12rem;
+  border-radius: var(--db-border-radius-md);
+  overflow: hidden;
+}
+
+.map-canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.map-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  padding: var(--db-spacing-fixed-2xs) var(--db-spacing-fixed-xs);
+  border-radius: var(--db-border-radius-xs);
+  background: var(--db-neutral-bg-basic-level-1-default, #fff);
+  box-shadow: var(--db-elevation-sm);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+
+  small {
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  }
+
+  strong {
+    font-weight: 700;
+  }
+}
+
+.map-pickup {
+  inset-block-end: var(--db-spacing-fixed-md);
+  inset-inline-start: var(--db-spacing-fixed-sm);
+}
+
+.map-eta {
+  inset-block-start: var(--db-spacing-fixed-sm);
+  inset-inline-end: var(--db-spacing-fixed-sm);
+  font-weight: 600;
+}
+
+/* driver / detail rows */
+.card {
+  display: block;
+}
+
+.rows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--db-spacing-fixed-md);
+  padding-block: var(--db-spacing-fixed-sm);
+
+  & + & {
+    border-block-start: var(--db-border-width-3xs) solid
+      var(--db-adaptive-on-bg-basic-emphasis-50-default);
+  }
+}
+
+.row dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--db-spacing-fixed-xs);
+  color: var(--db-adaptive-on-bg-basic-emphasis-90-default);
+}
+
+.row dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: end;
+}
+
+.row-icon {
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+}
+
+.plate {
+  display: inline-block;
+  padding: var(--db-spacing-fixed-3xs) var(--db-spacing-fixed-xs);
+  border-radius: var(--db-border-radius-xs);
+  background: var(--db-adaptive-bg-basic-level-2-default, #eef1f4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* voucher ticket */
+.voucher {
+  display: block;
+}
+
+.voucher-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--db-spacing-fixed-sm);
+  padding: var(--db-spacing-fixed-sm) var(--db-spacing-fixed-md);
+  border-block-end: var(--db-border-width-2xs) dashed
+    var(--db-adaptive-on-bg-basic-emphasis-40-default, rgb(0 0 0 / 18%));
+}
+
+.voucher-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+}
+
+.voucher-route {
+  margin: var(--db-spacing-fixed-3xs) 0 0;
+  font-weight: 700;
+  font-size: 1.0625rem;
+}
+
+.voucher-body {
+  display: flex;
+  align-items: center;
+  gap: var(--db-spacing-fixed-md);
+  padding: var(--db-spacing-fixed-md);
+}
+
+.qr {
+  flex: 0 0 auto;
+  inline-size: 6.5rem;
+  block-size: 6.5rem;
+
+  rect {
+    fill: var(--db-adaptive-on-bg-basic-emphasis-100-default);
+  }
+}
+
+.voucher-info {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--db-spacing-fixed-xs);
+
+  dt {
+    font-size: 0.8125rem;
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+  }
+}
+
+/* actions */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--db-spacing-fixed-sm);
+  margin-block-start: var(--db-spacing-fixed-sm);
+}
+
+.secure {
+  align-self: center;
+  color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+}
+
+/* dark "Add to Wallet" CTA, matching the mockup */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:host ::ng-deep button.wallet.db-button[data-variant] {
+  border-color: transparent;
+  background-color: var(--db-adaptive-on-bg-basic-emphasis-100-default);
+  color: var(--db-neutral-bg-basic-level-1-default, #fff);
+}
