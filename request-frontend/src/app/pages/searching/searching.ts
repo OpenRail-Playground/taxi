@@ -32,7 +32,8 @@ export class Searching {
     }
   }
 
-  protected viewDetails(): void {
-    void this.#router.navigate(['/confirmation']);
+  /** A click anywhere on the screen advances to the assigned-driver screen. */
+  protected goToSuccess(): void {
+    void this.#router.navigate(['/success']);
   }
 }

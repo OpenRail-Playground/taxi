@@ -4,9 +4,9 @@ import {
   DBButton,
   DBNotification,
   DBSection,
-  DBTag,
 } from '@db-ux/ngx-core-components';
 
+import { JourneyInformation } from '../../components/journey-information/journey-information';
 import { JourneyStepper } from '../../components/journey-stepper/journey-stepper';
 import { BookingApi } from '../../services/booking-api';
 import { RequestStore } from '../../services/request-store';
@@ -14,7 +14,13 @@ import { RequestStore } from '../../services/request-store';
 /** Step 2 — show the disrupted leg of the journey. */
 @Component({
   selector: 'app-journey',
-  imports: [DBSection, DBButton, DBTag, DBNotification, JourneyStepper],
+  imports: [
+    DBSection,
+    DBButton,
+    DBNotification,
+    JourneyStepper,
+    JourneyInformation,
+  ],
   templateUrl: './journey.html',
   styleUrl: './journey.scss',
 })

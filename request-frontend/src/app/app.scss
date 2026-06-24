@@ -1,15 +1,14 @@
-// App shell: a slim mobile-style top bar.
-// `home` mode shows the brand left + a help link right;
-// `step` mode shows a back button, a centered brand, and the help link right.
+// App shell: a slim mobile-style top bar shown on every screen —
+// back button (left), centered DB brand, help link (right).
 // Keep global styles in `src/styles.scss`.
 
 .topbar {
   position: sticky;
   inset-block-start: 0;
   z-index: 10;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
   gap: var(--db-spacing-fixed-sm);
   padding: var(--db-spacing-fixed-2xs) var(--db-spacing-fixed-sm);
   border-block-end: var(--db-border-width-3xs) solid
@@ -17,24 +16,16 @@
   background: var(--db-neutral-bg-basic-level-1-default, #fff);
 }
 
+.topbar-brand {
+  justify-self: center;
+}
+
 .topbar-help {
+  justify-self: end;
   display: inline-flex;
   align-items: center;
   gap: var(--db-spacing-fixed-3xs);
   white-space: nowrap;
-}
-
-.topbar[data-mode='step'] {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-}
-
-.topbar[data-mode='step'] .topbar-brand {
-  justify-self: center;
-}
-
-.topbar[data-mode='step'] .topbar-help {
-  justify-self: end;
 }
 
 .content {

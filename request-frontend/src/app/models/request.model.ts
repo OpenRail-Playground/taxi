@@ -56,7 +56,7 @@ export interface JourneyInfo {
 export const DEMO_CONTACT: ContactDetails = {
   name: 'Max Mustermann',
   phone: '+49 171 123 45 67',
-  email: 'max.mustermann@example.com',
+  email: 'susi.berger@test.ch',
 };
 
 export const DEMO_PASSENGERS: PassengerCounts = {

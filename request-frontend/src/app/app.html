@@ -1,22 +1,18 @@
 <db-page>
-  <header class="topbar" [attr.data-mode]="headerMode()">
-    @if (headerMode() === 'step') {
-      <db-button
-        class="topbar-back"
-        variant="ghost"
-        icon="chevron_left"
-        [noText]="true"
-        (click)="back()">
-        Back
-      </db-button>
-    }
+  <header class="topbar">
+    <db-button
+      class="topbar-back"
+      variant="ghost"
+      icon="chevron_left"
+      [noText]="true"
+      (click)="back()">
+      Back
+    </db-button>
     <db-brand class="topbar-brand">Taxi</db-brand>
-    @if (headerMode() !== 'plain') {
-      <db-link class="topbar-help" href="#" [showIcon]="false">
-        Help
-        <db-icon icon="question_mark_circle" />
-      </db-link>
-    }
+    <db-link class="topbar-help" href="#" [showIcon]="false">
+      Help
+      <db-icon icon="question_mark_circle" />
+    </db-link>
   </header>
 
   <main class="content">

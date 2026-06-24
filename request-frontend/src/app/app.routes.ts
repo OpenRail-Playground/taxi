@@ -44,5 +44,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/searching/searching').then(m => m.Searching),
   },
+  {
+    path: 'success',
+    title: 'Taxi confirmed',
+    data: { headerMode: 'home' },
+    loadComponent: () => import('./pages/success/success').then(m => m.Success),
+  },
   { path: '**', redirectTo: '' },
 ];

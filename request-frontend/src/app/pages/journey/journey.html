@@ -5,7 +5,7 @@
     <header class="page-head">
       <h1>Journey</h1>
       <p>
-        @if (journey().disruption; as disruption) {
+        @if (journey().disruption) {
           Here is the relevant part of your journey. Your train service is
           disrupted from the station shown in red.
         } @else {
@@ -13,55 +13,6 @@
         }
       </p>
     </header>
-
-    <db-notification
-      variant="standalone"
-      icon="train"
-      [headline]="journey().trainNumber"
-      class="train">
-      {{ journey().trainNote }}
-    </db-notification>
-
-    <section class="block">
-      <h2 class="block-title">Your journey</h2>
-
-      <ol class="timeline">
-        <li class="timeline-stop is-origin">
-          <span class="timeline-rail"><span class="timeline-dot"></span></span>
-          <div class="timeline-body">
-            <span class="timeline-station">{{ journey().origin.station }}</span>
-            <db-tag>Departure</db-tag>
-            <span class="timeline-time">{{ journey().origin.departure }}</span>
-          </div>
-        </li>
-
-        @if (journey().disruption; as disruption) {
-          <li class="timeline-stop is-disruption">
-            <span class="timeline-rail"
-              ><span class="timeline-dot"></span
-            ></span>
-            <div class="timeline-body">
-              <span class="timeline-station">{{ disruption.station }}</span>
-              <span class="timeline-alert">Disruption station</span>
-              <span class="timeline-time">{{ disruption.arrival }}</span>
-            </div>
-          </li>
-        }
-
-        <li class="timeline-stop is-destination">
-          <span class="timeline-rail"><span class="timeline-dot"></span></span>
-          <div class="timeline-body">
-            <span class="timeline-station">
-              {{ journey().destination.station }}
-            </span>
-            <db-tag>Final destination</db-tag>
-            <span class="timeline-time">
-              {{ journey().destination.plannedArrival }}
-            </span>
-          </div>
-        </li>
-      </ol>
-    </section>
 
     @if (journey().disruption; as disruption) {
       <db-notification
@@ -82,6 +33,8 @@
         Your train serves {{ journey().destination.station }} as scheduled.
       </db-notification>
     }
+
+    <app-journey-information [journey]="journey()" />
 
     <db-button
       variant="brand"

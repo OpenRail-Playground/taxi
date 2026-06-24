@@ -6,11 +6,10 @@ import {
   DBCard,
   DBIcon,
   DBInfotext,
-  DBNotification,
   DBSection,
-  DBTag,
 } from '@db-ux/ngx-core-components';
 
+import { JourneyInformation } from '../../components/journey-information/journey-information';
 import { JourneyStepper } from '../../components/journey-stepper/journey-stepper';
 import { RequestStore } from '../../services/request-store';
 
@@ -21,11 +20,10 @@ import { RequestStore } from '../../services/request-store';
     DBSection,
     DBCard,
     DBButton,
-    DBTag,
-    DBNotification,
     DBInfotext,
     DBIcon,
     JourneyStepper,
+    JourneyInformation,
   ],
   templateUrl: './confirmation.html',
   styleUrl: './confirmation.scss',

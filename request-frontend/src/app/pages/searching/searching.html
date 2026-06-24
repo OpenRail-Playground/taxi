@@ -1,5 +1,9 @@
 <db-section spacing="small">
-  <div class="page">
+  <div
+    class="page"
+    tabindex="0"
+    (click)="goToSuccess()"
+    (keydown.enter)="goToSuccess()">
     <header class="page-head">
       <h1>We are looking<br />for a taxi for you.</h1>
       <p class="searching">
@@ -16,11 +20,7 @@
       class="info">
       Your booking is confirmed. Please stay near the exit — we'll notify you
       when a driver is assigned.
-      <db-button
-        variant="ghost"
-        iconTrailing="arrow_right"
-        class="info-link"
-        (click)="viewDetails()">
+      <db-button variant="ghost" iconTrailing="arrow_right" class="info-link">
         View travel details
       </db-button>
     </db-notification>

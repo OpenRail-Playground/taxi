@@ -1,6 +1,6 @@
+import { Location } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import {
   DBBrand,
   DBButton,
@@ -8,16 +8,17 @@ import {
   DBLink,
   DBPage,
 } from '@db-ux/ngx-core-components';
-import { filter, map } from 'rxjs';
 
-type HeaderMode = 'home' | 'step' | 'plain';
-
-/**
- * Ordered steps of the request flow. The back button walks this sequence
- * instead of relying on browser history, so it works the same even after a
- * refresh or when a step is opened directly.
- */
-const FLOW = ['/journey-data', '/journey', '/passenger-data', '/confirmation'];
+/** Ordered screens; the back button walks this rather than browser history. */
+const FLOW = [
+  '/',
+  '/journey-data',
+  '/journey',
+  '/passenger-data',
+  '/confirmation',
+  '/searching',
+  '/success',
+];
 
 @Component({
   selector: 'app-root',
@@ -27,29 +28,16 @@ const FLOW = ['/journey-data', '/journey', '/passenger-data', '/confirmation'];
 })
 export class AppComponent {
   readonly #router = inject(Router);
+  readonly #location = inject(Location);
 
-  /**
-   * The first steps show the brand + a help link; deeper steps show a back
-   * button and a centered brand. Driven by each route's `headerMode` data.
-   */
-  protected readonly headerMode = toSignal(
-    this.#router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      map(() => {
-        let route = this.#router.routerState.root;
-        while (route.firstChild) {
-          route = route.firstChild;
-        }
-        return (route.snapshot.data['headerMode'] ?? 'step') as HeaderMode;
-      })
-    ),
-    { initialValue: 'home' as HeaderMode }
-  );
-
-  /** Navigate to the previous step in the flow. */
+  /** Go to the previous screen in the flow (falls back to browser history). */
   protected back(): void {
     const current = this.#router.url.split(/[?#]/)[0];
     const index = FLOW.indexOf(current);
-    void this.#router.navigate([index > 0 ? FLOW[index - 1] : FLOW[0]]);
+    if (index > 0) {
+      void this.#router.navigate([FLOW[index - 1]]);
+    } else {
+      this.#location.back();
+    }
   }
 }

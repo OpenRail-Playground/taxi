@@ -11,10 +11,8 @@
 }
 
 .page-head {
-  margin-block-start: var(--db-spacing-fixed-lg);
-
   h1 {
-    margin: 0 0 var(--db-spacing-fixed-sm);
+    margin-block: 0 var(--db-spacing-fixed-2xs);
   }
 
   p {
