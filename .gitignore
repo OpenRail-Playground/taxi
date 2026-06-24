@@ -6,3 +6,5 @@ Thumbs.db
 /data
 
 *.local
+.idea
+**/node_modules
