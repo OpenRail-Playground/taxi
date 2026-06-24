@@ -31,12 +31,12 @@ The repo holds four top-level packages. There is intentionally **no root package
 └── pooling/            # Python service for pooling customers on taxi rides
 ```
 
-| Component                                | Stack                     | Port (dev) | Docs |
-|------------------------------------------|---------------------------|------------|---|
-| [`request-frontend/`](request-frontend/) | Angular 21, DB UX, pnpm   | `4200`     | [request-frontend/README.md](request-frontend/README.md) |
-| [`request-backend/`](request-backend/)   | NestJS 11 on Express, pnpm | `3000`     | [request-backend/README.md](request-backend/README.md) |
-| [`shared/`](shared/)                     | TypeScript types, pnpm    | —          | — |
-| [`pooling/`](pooling/)                   | Python                    | ``8001     | — |
+| Component                                | Stack                     | Port (dev) | Docs                                                     |
+|------------------------------------------|---------------------------|-----------|----------------------------------------------------------|
+| [`request-frontend/`](request-frontend/) | Angular 21, DB UX, pnpm   | `4200`    | [request-frontend/README.md](request-frontend/README.md) |
+| [`request-backend/`](request-backend/)   | NestJS 11 on Express, pnpm | `3000`    | [request-backend/README.md](request-backend/README.md)   |
+| [`shared/`](shared/)                     | TypeScript types, pnpm    | —         | —                                                        |
+| [`pooling/`](pooling/)                   | Python                    | `8001`     | [pooling/README.md](pooling/README.md)           |
 
 ## Prerequisites
 
