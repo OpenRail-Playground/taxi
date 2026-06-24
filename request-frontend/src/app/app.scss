@@ -20,6 +20,19 @@
   justify-self: center;
 }
 
+/* "DBringer" wordmark — red DB + dark "ringer", matching the logo */
+.wordmark {
+  font-weight: 800;
+  font-size: 1.3rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--db-adaptive-on-bg-basic-emphasis-100-default);
+}
+
+.wordmark-db {
+  color: var(--db-critical-origin-default);
+}
+
 .topbar-help {
   justify-self: end;
   display: inline-flex;
