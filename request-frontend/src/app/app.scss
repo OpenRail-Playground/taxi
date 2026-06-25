@@ -33,15 +33,42 @@
   color: var(--db-critical-origin-default);
 }
 
-.topbar-help {
+.topbar-hack4rail {
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  gap: var(--db-spacing-fixed-3xs);
-  white-space: nowrap;
+  text-decoration: none;
+}
+
+.topbar-hack4rail-img {
+  block-size: var(--db-sizing-md);
+  inline-size: auto;
+  display: block;
 }
 
 .content {
   padding-block: var(--db-spacing-fixed-md);
   padding-inline: var(--db-spacing-fixed-sm);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: var(--db-spacing-fixed-sm);
+  padding-block: var(--db-spacing-fixed-sm);
+  padding-inline: var(--db-spacing-fixed-sm);
+  border-block-start: var(--db-border-width-3xs) solid
+    var(--db-adaptive-on-bg-basic-emphasis-50-default);
+  font-size: 0.875rem;
+
+  a {
+    color: var(--db-adaptive-on-bg-basic-emphasis-70-default);
+    text-decoration: none;
+  }
+
+  a:hover,
+  a:focus-visible {
+    color: var(--db-adaptive-on-bg-basic-emphasis-100-default);
+    text-decoration: underline;
+  }
 }

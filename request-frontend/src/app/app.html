@@ -11,13 +11,25 @@
     <span class="topbar-brand wordmark">
       <span class="wordmark-db">DB</span>ringer
     </span>
-    <db-link class="topbar-help" href="#" [showIcon]="false">
-      Help
-      <db-icon icon="question_mark_circle" />
-    </db-link>
+    <a
+      class="topbar-hack4rail"
+      href="https://hack4rail.org/"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Built at Hack4Rail 2026">
+      <img
+        src="/images/hack4rail-logo.jpg"
+        alt=""
+        aria-hidden="true"
+        class="topbar-hack4rail-img" />
+    </a>
   </header>
 
   <main class="content">
     <router-outlet />
   </main>
+
+  <footer class="footer">
+    <a routerLink="/static/imprint">Imprint</a>
+  </footer>
 </db-page>

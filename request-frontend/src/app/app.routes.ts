@@ -50,5 +50,9 @@ export const routes: Routes = [
     data: { headerMode: 'home' },
     loadComponent: () => import('./pages/success/success').then(m => m.Success),
   },
+  {
+    path: 'static',
+    loadChildren: () => import('./static/static.routes'),
+  },
   { path: '**', redirectTo: '' },
 ];
