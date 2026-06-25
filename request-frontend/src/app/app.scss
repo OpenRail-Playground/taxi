@@ -33,12 +33,17 @@
   color: var(--db-critical-origin-default);
 }
 
-.topbar-help {
+.topbar-hack4rail {
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  gap: var(--db-spacing-fixed-3xs);
-  white-space: nowrap;
+  text-decoration: none;
+}
+
+.topbar-hack4rail-img {
+  block-size: var(--db-sizing-md);
+  inline-size: auto;
+  display: block;
 }
 
 .content {

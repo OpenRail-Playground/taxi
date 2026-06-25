@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { DBButton, DBIcon, DBLink, DBPage } from '@db-ux/ngx-core-components';
+import { DBButton, DBPage } from '@db-ux/ngx-core-components';
 
 /** Ordered screens; the back button walks this rather than browser history. */
 const FLOW = [
@@ -18,7 +18,7 @@ const FLOW = [
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  imports: [RouterOutlet, DBPage, DBButton, DBLink, DBIcon],
+  imports: [RouterOutlet, DBPage, DBButton],
 })
 export class AppComponent {
   readonly #router = inject(Router);
